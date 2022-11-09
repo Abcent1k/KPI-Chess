@@ -51,6 +51,8 @@
 			this.Cursor = System.Windows.Forms.Cursors.Hand;
 			this.Name = "Chessboard";
 			this.Text = "Chess";
+			this.Deactivate += new System.EventHandler(this.Chessboard_Deactivate);
+			this.Load += new System.EventHandler(this.Chessboard_Load);
 			this.ResumeLayout(false);
 
 		}

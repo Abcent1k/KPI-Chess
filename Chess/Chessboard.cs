@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace Chess
 {
@@ -14,6 +18,8 @@ namespace Chess
 		public Color darkPushedCell = Color.MediumSeaGreen;//Цвет нажатой кнопки, если клетка под фигурой темная
 
 		public Match currentMatch;
+
+		StreamWriter sw = new StreamWriter("save.txt");
 
 		public string[,] defaultMap = new string[8, 8]//Карта начальных позиций фигур
 		{
@@ -124,6 +130,8 @@ namespace Chess
 			}
 		}
 
+
+
 		private void OnFigurePress(object sender, EventArgs e)//Ивент нажатия на фигуру
 		{
 			Button pressBttn = sender as Button;
@@ -141,6 +149,11 @@ namespace Chess
 			{
 				chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize] = chess[prevBttn.Location.Y / sideSize, prevBttn.Location.X / sideSize];
 				chess[prevBttn.Location.Y / sideSize, prevBttn.Location.X / sideSize] = null;
+
+
+				sw.Write((prevBttn.Location.Y / sideSize).ToString() + (prevBttn.Location.X / sideSize).ToString() + "-");//Сохраниние результатов
+				sw.Write((pressBttn.Location.Y / sideSize).ToString() + (pressBttn.Location.X / sideSize).ToString() + "; ");//Сохраниние результатов
+
 
 				currentMatch.roundW = !currentMatch.roundW;//Смена хода
 
@@ -183,6 +196,8 @@ namespace Chess
 						}
 					}
 				}//Подсветка точками возможных ходов
+
+				prevBttn = pressBttn;
 			}
 		}
 		public void ResetBacklightChessboard()//Сброс подсветок на шахматной доске
@@ -206,6 +221,15 @@ namespace Chess
 			pressBttn.Visible = false;
 
 			currentMatch = new Match(this);			
+		}
+
+		private void Chessboard_Load(object sender, EventArgs e)
+		{			
+		}
+
+		private void Chessboard_Deactivate(object sender, EventArgs e)
+		{
+			sw.Close();
 		}
 	}
 }
