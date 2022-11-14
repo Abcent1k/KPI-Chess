@@ -36,7 +36,7 @@ namespace Chess
 					{
 						posSteps[Y + y1, X] = true;
 						if (Y == y16 && cb.chess[Y + y2, X] == null)//Ход на две клеточки
-							posSteps[Y + y2, X] = true;
+							posSteps[Y + y2, X] = true;						
 					}
 
 					if ((cb.chess[Y + y1, X + plus_or_minus]?.color ?? color) != color)//Бить
