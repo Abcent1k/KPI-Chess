@@ -150,7 +150,7 @@ namespace Chess
 				chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize] = chess[prevBttn.Location.Y / sideSize, prevBttn.Location.X / sideSize];
 				chess[prevBttn.Location.Y / sideSize, prevBttn.Location.X / sideSize] = null;
 
-
+				//save mechanic
 				sw.Write((prevBttn.Location.Y / sideSize).ToString() + (prevBttn.Location.X / sideSize).ToString() + "-");//Сохраниние результатов
 				sw.Write((pressBttn.Location.Y / sideSize).ToString() + (pressBttn.Location.X / sideSize).ToString() + "; ");//Сохраниние результатов
 

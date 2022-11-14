@@ -33,9 +33,10 @@
 			// 
 			// button1
 			// 
-			this.button1.Location = new System.Drawing.Point(248, 293);
+			this.button1.Location = new System.Drawing.Point(231, 298);
+			this.button1.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 			this.button1.Name = "button1";
-			this.button1.Size = new System.Drawing.Size(229, 92);
+			this.button1.Size = new System.Drawing.Size(262, 123);
 			this.button1.TabIndex = 0;
 			this.button1.Text = "Start the match";
 			this.button1.UseVisualStyleBackColor = true;
@@ -43,12 +44,13 @@
 			// 
 			// Chessboard
 			// 
-			this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+			this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.BackColor = System.Drawing.SystemColors.Control;
-			this.ClientSize = new System.Drawing.Size(728, 728);
+			this.ClientSize = new System.Drawing.Size(726, 720);
 			this.Controls.Add(this.button1);
 			this.Cursor = System.Windows.Forms.Cursors.Hand;
+			this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 			this.Name = "Chessboard";
 			this.Text = "Chess";
 			this.Deactivate += new System.EventHandler(this.Chessboard_Deactivate);
