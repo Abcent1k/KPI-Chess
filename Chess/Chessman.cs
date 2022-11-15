@@ -17,21 +17,21 @@ namespace Chess
 			//chessSprite = Image.FromFile($"Sprites\\{this.color}{type}.svg");
 
 			posStepCalculated = false;
-			posSteps = new bool[8, 8];
+			posSteps = new byte[8, 8];
 		}
 
-		public bool[,] ResetSteps()
+		public byte[,] ResetSteps()
 		{
 			for (int i = 0; i < 8; i++)
 			{
 				for (int j = 0; j < 8; j++)
 				{
-					posSteps[i, j] = false;
+					posSteps[i, j] = 0;
 				}
 			}
 			return posSteps;
 		}
-		public abstract bool[,] PossibleSteps(Chessboard cb);
+		public abstract byte[,] PossibleSteps(Chessboard cb);
 
 		public void GetIter(Chessboard cb, ref int X, ref int Y)
 		{
@@ -48,7 +48,7 @@ namespace Chess
 			}
 		}
 
-		public bool[,] posSteps;
+		public byte[,] posSteps;
 
 		public Bitmap chessSprite;
 		public char type { get; }

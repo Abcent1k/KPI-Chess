@@ -6,7 +6,8 @@ namespace Chess
 	{
 		public static int sideSize = 80;//Размер клетки (кнопки)
 		public Bitmap dot = new Bitmap (new Bitmap($"Sprites\\1dot.png"),new Size(sideSize - 3, sideSize - 3));
-		public Bitmap border = new Bitmap (new Bitmap($"Sprites\\1border.png"),new Size(sideSize - 3, sideSize - 3));		
+		public Bitmap border = new Bitmap (new Bitmap($"Sprites\\1border.png"),new Size(sideSize - 3, sideSize - 3));
+		public Bitmap x = new Bitmap($"Sprites\\x.png");
 
 		public Color lightCell = Color.FromArgb(255, 237, 252, 248);//Светлый цвет для карты цветов
 		public Color darkCell = Color.FromArgb(255, 0, 87, 62);//Темный цвет для карты цветов
@@ -14,17 +15,14 @@ namespace Chess
 		public Color lightPushedCell = Color.LightGreen;//Цвет нажатой кнопки, если клетка под фигурой светлая
 		public Color darkPushedCell = Color.MediumSeaGreen;//Цвет нажатой кнопки, если клетка под фигурой темная
 
-		public Match currentMatch;
-
-		//public DateTime localDate = DateTime.Now;
-		//FileStream fs = new FileStream($"{localDate}.txt", FileMode.Create);
+		public Match currentMatch;		
 
 		public string[,] defaultMap = new string[8, 8]//Карта начальных позиций фигур
 		{
 			{"bR","bH","bB","bK","bQ","bB","bH","bR"},
 			{"bP","bP","bP","bP","bP","bP","bP","bP"},
 			{"","","","","","","",""},
-			{"","","","","","","",""},
+			{"","bR","","","","wB","",""},
 			{"","","","","","","",""},
 			{"","","","","","","",""},
 			{"wP","wP","wP","wP","wP","wP","wP","wP"},
@@ -142,6 +140,7 @@ namespace Chess
 
 			if (pressBttn.BackColor == lightPushedCell || pressBttn.BackColor == darkPushedCell)//Нажатие на подсвечиваемую фигуру
 			{
+				pressChess.posStepCalculated = false;//Обнуление маркера
 				ResetBacklightChessboard();
 				prevBttn = null;
 				return;
@@ -153,17 +152,22 @@ namespace Chess
 				chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize] = chess[prevBttn.Location.Y / sideSize, prevBttn.Location.X / sideSize];
 				chess[prevBttn.Location.Y / sideSize, prevBttn.Location.X / sideSize] = null;
 
-				//save mechanic
+				if(buttons[(pressBttn.Location.Y / sideSize) + 1, pressBttn.Location.X / sideSize].Image == x)
+					chess[(pressBttn.Location.Y / sideSize) + 1, pressBttn.Location.X / sideSize] = null;
+				else if(buttons[(pressBttn.Location.Y / sideSize) - 1, pressBttn.Location.X / sideSize].Image == x)
+					chess[(pressBttn.Location.Y / sideSize) - 1, pressBttn.Location.X / sideSize] = null;
 
+
+				//save mechanic
 				StreamWriter sw = new StreamWriter(new FileStream($"{currentMatch.safeFile}.txt", FileMode.Append));
-				sw.Write((prevBttn.Location.Y / sideSize).ToString() + (prevBttn.Location.X / sideSize).ToString() + "-");//Сохраниние результатов
-				sw.Write((pressBttn.Location.Y / sideSize).ToString() + (pressBttn.Location.X / sideSize).ToString() + " ");//Сохраниние результатов
+				sw.Write(" " + (prevBttn.Location.Y / sideSize).ToString() + (prevBttn.Location.X / sideSize).ToString() + "-");//Сохраниние результатов
+				sw.Write((pressBttn.Location.Y / sideSize).ToString() + (pressBttn.Location.X / sideSize).ToString());//Сохраниние результатов
 				sw.Close();
 
 				currentMatch.currentStep ++;
 				currentMatch.roundW = !currentMatch.roundW;//Смена хода
 
-				chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize].posStepCalculated = false;
+				chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize].posStepCalculated = false;//Обнуление маркера
 
 				ResetBacklightChessboard();
 				prevBttn = null;//Обнуление предыдущей кнопки
@@ -172,6 +176,8 @@ namespace Chess
 			}
 			else//Нажимаем на клетку без подсветки
 			{
+				if(prevBttn != null && chess[prevBttn.Location.Y / sideSize, prevBttn.Location.X / sideSize] != null)
+					chess[prevBttn.Location.Y / sideSize, prevBttn.Location.X / sideSize].posStepCalculated = false;//Обнуление маркера
 				prevBttn = pressBttn;
 				ResetBacklightChessboard();
 			}
@@ -185,7 +191,7 @@ namespace Chess
 				if (pressChess.posStepCalculated == false)//Расчет возможных ходов выбраной фигуры
 				{
 					pressChess.PossibleSteps(this);
-					pressChess.posStepCalculated = true;
+					pressChess.posStepCalculated = true;//Установка маркера
 				}
 
 				if (pressBttn.BackColor == lightCell)//Подсветка выбраной фигуры
@@ -197,15 +203,13 @@ namespace Chess
 				{
 					for (int j = 0; j < 8; j++)
 					{
-						if (pressChess?.posSteps[i, j] == true)
-						{
-							if (pressChess?.color != (chess[i, j]?.color ?? pressChess?.color))
-								buttons[i, j].Image = border;
-							else
+						if (pressChess?.posSteps[i, j] == 1)							
 								buttons[i, j].Image = dot;
-
-							buttons[i, j].ImageAlign = ContentAlignment.MiddleCenter;							
-						}
+						else if (pressChess?.posSteps[i, j] == 2)
+							buttons[i, j].Image = border;
+						else if (pressChess?.posSteps[i, j] == 3)
+							buttons[i, j].Image = x;
+						buttons[i, j].ImageAlign = ContentAlignment.MiddleCenter;
 					}
 				}//Подсветка точками возможных ходов
 

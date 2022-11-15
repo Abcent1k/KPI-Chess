@@ -4,7 +4,7 @@ namespace Chess
 	public partial class Match
 	{
 		public bool roundW;		
-		public string safeFile = ("SF "+(DateTime.Now).ToString().Replace(":", "."));
+		public string safeFile = ("SF " + (DateTime.Now).ToString().Replace(":", "."));
 		public int currentStep = 1;
 
 		public Match(Chessboard cb)

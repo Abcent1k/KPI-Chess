@@ -1,11 +1,13 @@
 ﻿
+using Microsoft.VisualBasic;
+
 namespace Chess
 {
 	internal class Pawn : Chessman
 	{
 		public Pawn(char color) : base(color) { }
 
-		public override bool[,] PossibleSteps(Chessboard cb)
+		public override byte[,] PossibleSteps(Chessboard cb)
 		{
 			ResetSteps();
 
@@ -16,12 +18,17 @@ namespace Chess
 
 			int plus_or_minus = 1;
 
+			StreamReader sr = new StreamReader($"{cb.currentMatch.safeFile}.txt");
+			string str = sr.ReadToEnd();
+			int len = str.Length;
+
 			for (int n1 = 1; n1 <= 2; n1++)
 			{
 				int y1 = 1,//Для обычного хода
 					y2 = 2,//Для битья
 					y16 = 1,//Для хода на две клеточки
 					yEnd = 7;//Для смены пешки при достижении края доски
+
 				try
 				{
 					if (color == 'w')
@@ -34,17 +41,37 @@ namespace Chess
 
 					if (cb.chess[Y + y1, X] == null)//Ход
 					{
-						posSteps[Y + y1, X] = true;
+						posSteps[Y + y1, X] = 1;
 						if (Y == y16 && cb.chess[Y + y2, X] == null)//Ход на две клеточки
-							posSteps[Y + y2, X] = true;						
+							posSteps[Y + y2, X] = 1;						
 					}
 
 					if ((cb.chess[Y + y1, X + plus_or_minus]?.color ?? color) != color)//Бить
-						posSteps[Y + y1, X + plus_or_minus] = true;
+						posSteps[Y + y1, X + plus_or_minus] = 2;
+
+					if(((Y == 4 && cb.chess[Y, X].color == 'b') || (Y == 3 && cb.chess[Y, X].color == 'w')) && (cb.chess[Y, X + 1]?.type == 'P' || cb.chess[Y, X - 1]?.type == 'P'))
+					{														
+						if((X + plus_or_minus + 48 == (str[len-1])) && (X + plus_or_minus + 48 == (str[len - 4])))
+						{
+							if (str[len - 5] == 1 + 48)
+							{
+								posSteps[3, X + plus_or_minus] = 3;
+								posSteps[2, X + plus_or_minus] = 2;
+							}
+							else if (str[len - 5] == 6 + 48)
+							{
+								posSteps[4, X + plus_or_minus] = 3;
+								posSteps[5, X + plus_or_minus] = 2;
+							}
+						}
+					}
 				}
 				catch (IndexOutOfRangeException) { }
 				plus_or_minus *= -1;
 			}
+
+			sr.Close();
+
 			return posSteps;
 		}
 
@@ -54,7 +81,7 @@ namespace Chess
 	{
 		public Rook(char color) : base(color) { }
 
-		public override bool[,] PossibleSteps(Chessboard cb)
+		public override byte[,] PossibleSteps(Chessboard cb)
 		{
 			ResetSteps();
 
@@ -81,12 +108,14 @@ namespace Chess
 
 						try
 						{
-							if (cb.chess[Y + y, X + x]?.color != color)
+							if(cb.chess[Y + y, X + x] == null)
+								posSteps[Y + y, X + x] = 1;
+							
+							else if ((cb.chess[Y + y, X + x].color) != color)
 							{
-								posSteps[Y + y, X + x] = true;
-								if ((cb.chess[Y + y, X + x]?.color ?? color) != color)
-									break;
-							}
+								posSteps[Y + y, X + x] = 2;
+								break;
+							}							
 							else
 								break;
 						}
@@ -105,7 +134,7 @@ namespace Chess
 	{
 		public Bishop(char color) : base(color) { }
 
-		public override bool[,] PossibleSteps(Chessboard cb)
+		public override byte[,] PossibleSteps(Chessboard cb)
 		{
 			ResetSteps();
 
@@ -128,12 +157,14 @@ namespace Chess
 
 						try
 						{
-							if (cb.chess[Y + y, X + x]?.color != color)
+							if (cb.chess[Y + y, X + x] == null)
+								posSteps[Y + y, X + x] = 1;
+							else if ((cb.chess[Y + y, X + x].color) != color)
 							{
-								posSteps[Y + y, X + x] = true;
-								if ((cb.chess[Y + y, X + x]?.color ?? color) != color)
-									break;
+								posSteps[Y + y, X + x] = 2;
+								break;
 							}
+							
 							else
 								break;
 						}
@@ -153,7 +184,7 @@ namespace Chess
 	{
 		public Queen(char color) : base(color) { }
 
-		public override bool[,] PossibleSteps(Chessboard cb)
+		public override byte[,] PossibleSteps(Chessboard cb)
 		{
 			ResetSteps();
 
@@ -180,11 +211,13 @@ namespace Chess
 
 						try
 						{
-							if (cb.chess[Y + y, X + x]?.color != color)
+							if (cb.chess[Y + y, X + x] == null)
+								posSteps[Y + y, X + x] = 1;
+
+							if ((cb.chess[Y + y, X + x]?.color ?? color) != color)
 							{
-								posSteps[Y + y, X + x] = true;
-								if ((cb.chess[Y + y, X + x]?.color ?? color) != color)
-									break;
+								posSteps[Y + y, X + x] = 2;
+								break;
 							}
 							else
 								break;
@@ -209,11 +242,13 @@ namespace Chess
 
 						try
 						{
-							if (cb.chess[Y + y, X + x]?.color != color)
+							if (cb.chess[Y + y, X + x] == null)
+								posSteps[Y + y, X + x] = 1;
+
+							if ((cb.chess[Y + y, X + x]?.color ?? color) != color)
 							{
-								posSteps[Y + y, X + x] = true;
-								if ((cb.chess[Y + y, X + x]?.color ?? color) != color)
-									break;
+								posSteps[Y + y, X + x] = 2;
+								break;
 							}
 							else
 								break;
@@ -234,7 +269,7 @@ namespace Chess
 	{
 		public Night(char color) : base(color) { }
 
-		public override bool[,] PossibleSteps(Chessboard cb)
+		public override byte[,] PossibleSteps(Chessboard cb)
 		{
 			ResetSteps();
 
@@ -255,8 +290,10 @@ namespace Chess
 					{
 						try
 						{
-							if (cb.chess[Y + a, X + b]?.color != color)
-								posSteps[Y + a, X + b] = true;
+							if (cb.chess[Y + a, X + b] == null)
+								posSteps[Y + a, X + b] = 1;
+							else if (cb.chess[Y + a, X + b].color != color)
+								posSteps[Y + a, X + b] = 2;
 						}
 						catch (IndexOutOfRangeException) { }
 						tmp = a;
@@ -276,7 +313,7 @@ namespace Chess
 	{
 		public King(char color) : base(color) { }
 
-		public override bool[,] PossibleSteps(Chessboard cb)
+		public override byte[,] PossibleSteps(Chessboard cb)
 		{
 			ResetSteps();
 
@@ -300,8 +337,10 @@ namespace Chess
 
 							try
 							{
-								if (cb.chess[Y + y, X + x]?.color != color)
-									posSteps[Y + y, X + x] = true;
+								if (cb.chess[Y + y, X + x] == null)								
+									posSteps[Y + y, X + x] = 1;								
+								else if (cb.chess[Y + y, X + x].color != color)
+									posSteps[Y + y, X + x] = 2;								
 							}
 							catch (IndexOutOfRangeException) { }
 						}
