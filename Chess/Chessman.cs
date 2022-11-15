@@ -12,9 +12,11 @@ namespace Chess
 				this.color = 'b';
 			else
 				throw new ArgumentException();
+						
+			chessSprite = new Bitmap($"Sprites\\{this.color}{type}.png");
+			//chessSprite = Image.FromFile($"Sprites\\{this.color}{type}.svg");
 
-			chessSprite = Image.FromFile($"Sprites\\{this.color}{type}.png");
-
+			posStepCalculated = false;
 			posSteps = new bool[8, 8];
 		}
 
@@ -48,10 +50,10 @@ namespace Chess
 
 		public bool[,] posSteps;
 
-		public Image chessSprite;
-
+		public Bitmap chessSprite;
 		public char type { get; }
-
 		public char color { get; }
+
+		public bool posStepCalculated;//Маркер, посчитаны ли возможные ходы выбраной фигуры
 	}
 }

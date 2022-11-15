@@ -1,4 +1,5 @@
-﻿namespace Chess
+﻿using System.Windows;
+namespace Chess
 {
 	partial class Chessboard
 	{
@@ -33,7 +34,7 @@
 			// 
 			// button1
 			// 
-			this.button1.Location = new System.Drawing.Point(231, 298);
+			this.button1.Location = new System.Drawing.Point(231, 298);			
 			this.button1.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 			this.button1.Name = "button1";
 			this.button1.Size = new System.Drawing.Size(262, 123);
@@ -44,10 +45,10 @@
 			// 
 			// Chessboard
 			// 
-			this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
+			//this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);//Пока лучше отключить
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.BackColor = System.Drawing.SystemColors.Control;
-			this.ClientSize = new System.Drawing.Size(726, 720);
+			this.ClientSize = new System.Drawing.Size(sideSize * 8, sideSize * 8);
 			this.Controls.Add(this.button1);
 			this.Cursor = System.Windows.Forms.Cursors.Hand;
 			this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);

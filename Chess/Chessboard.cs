@@ -1,15 +1,12 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Chess
 {
 	public partial class Chessboard : Form
 	{
-		public Image dot = Image.FromFile($"Sprites\\1dot.png");
-		public Image border = Image.FromFile($"Sprites\\1border.png");
-		public int sideSize = 91;//Размер клетки (кнопки)
+		public static int sideSize = 80;//Размер клетки (кнопки)
+		public Bitmap dot = new Bitmap (new Bitmap($"Sprites\\1dot.png"),new Size(sideSize - 3, sideSize - 3));
+		public Bitmap border = new Bitmap (new Bitmap($"Sprites\\1border.png"),new Size(sideSize - 3, sideSize - 3));		
 
 		public Color lightCell = Color.FromArgb(255, 237, 252, 248);//Светлый цвет для карты цветов
 		public Color darkCell = Color.FromArgb(255, 0, 87, 62);//Темный цвет для карты цветов
@@ -19,7 +16,8 @@ namespace Chess
 
 		public Match currentMatch;
 
-		StreamWriter sw = new StreamWriter("save.txt");
+		//public DateTime localDate = DateTime.Now;
+		//FileStream fs = new FileStream($"{localDate}.txt", FileMode.Create);
 
 		public string[,] defaultMap = new string[8, 8]//Карта начальных позиций фигур
 		{
@@ -71,8 +69,11 @@ namespace Chess
 			{
 				for (int j = 0; j < 8; j++)
 				{
-					buttons[i, j].BackgroundImage = chess[i, j]?.chessSprite;
+					if (chess[i, j] != null)
+						chess[i, j].chessSprite = new Bitmap(chess[i, j].chessSprite, new Size(sideSize, sideSize));
+					buttons[i, j].BackgroundImage = chess[i, j]?.chessSprite;					
 					buttons[i, j].BackgroundImageLayout = ImageLayout.Center;
+					
 				}
 			}
 		}
@@ -87,7 +88,7 @@ namespace Chess
 
 					Button button = new Button();
 					button.Size = new Size(sideSize, sideSize);//Задаем размер кнопки
-					button.FlatAppearance.BorderSize = 0;//Убираем рамку у кнопок
+					button.FlatAppearance.BorderSize = 0;//Убeраем рамку у кнопок
 					button.FlatStyle = FlatStyle.Flat;//Делаем кнопку плоской, без скгруления
 					button.Location = new Point(j * sideSize, i * sideSize);//Расставляем кнопки
 					button.Click += new EventHandler(OnFigurePress);//Добавляем ивент
@@ -118,6 +119,8 @@ namespace Chess
 								chess[i, j] = new King(defaultMap[i, j][0]);
 								break;
 						}
+						if (chess[i, j] != null)
+							chess[i, j].chessSprite = new Bitmap(chess[i, j].chessSprite, new Size(sideSize, sideSize));
 						button.BackgroundImage = chess[i, j].chessSprite;
 						button.BackgroundImageLayout = ImageLayout.Center;
 					}
@@ -151,11 +154,16 @@ namespace Chess
 				chess[prevBttn.Location.Y / sideSize, prevBttn.Location.X / sideSize] = null;
 
 				//save mechanic
+
+				StreamWriter sw = new StreamWriter(new FileStream($"{currentMatch.safeFile}.txt", FileMode.Append));
 				sw.Write((prevBttn.Location.Y / sideSize).ToString() + (prevBttn.Location.X / sideSize).ToString() + "-");//Сохраниние результатов
-				sw.Write((pressBttn.Location.Y / sideSize).ToString() + (pressBttn.Location.X / sideSize).ToString() + "; ");//Сохраниние результатов
+				sw.Write((pressBttn.Location.Y / sideSize).ToString() + (pressBttn.Location.X / sideSize).ToString() + " ");//Сохраниние результатов
+				sw.Close();
 
-
+				currentMatch.currentStep ++;
 				currentMatch.roundW = !currentMatch.roundW;//Смена хода
+
+				chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize].posStepCalculated = false;
 
 				ResetBacklightChessboard();
 				prevBttn = null;//Обнуление предыдущей кнопки
@@ -174,9 +182,13 @@ namespace Chess
 				if ((currentMatch.roundW && pressChess.color == 'b') || (!currentMatch.roundW && pressChess.color == 'w'))//Проверка на то, чей ход
 					return;
 
-				pressChess.PossibleSteps(this);//Расчет возможных ходов выбраной фигуры
+				if (pressChess.posStepCalculated == false)//Расчет возможных ходов выбраной фигуры
+				{
+					pressChess.PossibleSteps(this);
+					pressChess.posStepCalculated = true;
+				}
 
-				if(pressBttn.BackColor == lightCell)//Подсветка выбраной фигуры
+				if (pressBttn.BackColor == lightCell)//Подсветка выбраной фигуры
 					pressBttn.BackColor = lightPushedCell;
 				else 
 					pressBttn.BackColor = darkPushedCell;
@@ -186,13 +198,13 @@ namespace Chess
 					for (int j = 0; j < 8; j++)
 					{
 						if (pressChess?.posSteps[i, j] == true)
-						{					
-							if (pressChess?.color != (chess[i, j]?.color ?? pressChess?.color))							
-								buttons[i, j].Image = border;							
-							else							
-								buttons[i, j].Image = dot;							
-							
-							buttons[i, j].ImageAlign = ContentAlignment.MiddleCenter;
+						{
+							if (pressChess?.color != (chess[i, j]?.color ?? pressChess?.color))
+								buttons[i, j].Image = border;
+							else
+								buttons[i, j].Image = dot;
+
+							buttons[i, j].ImageAlign = ContentAlignment.MiddleCenter;							
 						}
 					}
 				}//Подсветка точками возможных ходов
@@ -229,7 +241,7 @@ namespace Chess
 
 		private void Chessboard_Deactivate(object sender, EventArgs e)
 		{
-			sw.Close();
+			//sw.Close();
 		}
 	}
 }
