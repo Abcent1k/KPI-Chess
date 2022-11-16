@@ -39,7 +39,8 @@ namespace Chess
 
 		public Button[,] buttons = new Button[8, 8];//Массив с кнопками
 
-		public Label[] labels1 = new Label[8];
+		public Label[] Wlabels = new Label[16];
+		public Label[] Blabels = new Label[16];
 
 		public Chessman[,] chess = new Chessman[8, 8];//Массив с фигурами
 
@@ -164,15 +165,35 @@ namespace Chess
 				Controls.Add(labelHT);
 				Controls.Add(labelHB);
 			}
-			Label label = new Label();
+			Label labelBorder = new Label();
 
-			label.Location = new Point(0, 0);
+			labelBorder.Location = new Point(0, 0);
 
-			label.Size = new Size(sideSize * 8 + borderSize * 2, sideSize * 8 + borderSize * 2);
+			labelBorder.Size = new Size(sideSize * 8 + borderSize * 2, sideSize * 8 + borderSize * 2);
 
-			label.BackColor = contour;
+			labelBorder.BackColor = contour;
 
-			Controls.Add(label);			
+			Controls.Add(labelBorder);
+			
+			for (int i = 0; i < 16; i++)
+			{
+				Label labelKnokoutW = new Label();
+				Label labelKnokoutB = new Label();
+
+				labelKnokoutW.Location = new Point((8 * sideSize) + borderSize * 3 + ((i % 4) * sideSize), borderSize + (i / 4) * sideSize);
+				labelKnokoutB.Location = new Point((8 * sideSize) + borderSize * 3 + ((i % 4) * sideSize), (7 * sideSize) + borderSize - (i / 4) * sideSize);
+
+				labelKnokoutB.Size = labelKnokoutW.Size = new Size(sideSize, sideSize);
+
+				labelKnokoutW.BackColor = darkCell;
+				labelKnokoutB.BackColor = lightCell;
+
+				Controls.Add(labelKnokoutW);
+				Controls.Add(labelKnokoutB);
+
+				Wlabels[i] = labelKnokoutW;
+				Blabels[i] = labelKnokoutB;
+			}
 		}
 
 
@@ -249,9 +270,24 @@ namespace Chess
 					}
 				}
 
+				//Реализация бить или ходить
 				else
 				{
-					//Реализация бить или ходить
+					if (pressBttn.Image == border)
+					{
+						if (chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize]?.color == 'w')
+						{
+							currentMatch.WKnockedOutChessman.Add(chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize]);
+							int iter = currentMatch.WKnockedOutChessman.Count() - 1;
+							Wlabels[iter].Image = currentMatch.WKnockedOutChessman[iter].chessSprite;
+						}
+						else if (chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize]?.color == 'b')
+						{ 
+							currentMatch.BKnockedOutChessman.Add(chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize]);
+							int iter = currentMatch.BKnockedOutChessman.Count() - 1;
+							Blabels[iter].Image = currentMatch.BKnockedOutChessman[iter].chessSprite;
+						}
+					}
 					chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize] = chess[prevBttn.Location.Y / sideSize, prevBttn.Location.X / sideSize];
 					chess[prevBttn.Location.Y / sideSize, prevBttn.Location.X / sideSize] = null;
 				}
@@ -260,9 +296,21 @@ namespace Chess
 				try
 				{
 					if (buttons[(pressBttn.Location.Y / sideSize) + 1, pressBttn.Location.X / sideSize].Image == x)
+					{
+						currentMatch.BKnockedOutChessman.Add(chess[(pressBttn.Location.Y / sideSize) + 1, pressBttn.Location.X / sideSize]);
+						int iter = currentMatch.BKnockedOutChessman.Count() - 1;
+						Blabels[iter].Image = currentMatch.BKnockedOutChessman[iter].chessSprite;
+
 						chess[(pressBttn.Location.Y / sideSize) + 1, pressBttn.Location.X / sideSize] = null;
+					}
 					else if (buttons[(pressBttn.Location.Y / sideSize) - 1, pressBttn.Location.X / sideSize].Image == x)
+					{
+						currentMatch.WKnockedOutChessman.Add(chess[(pressBttn.Location.Y / sideSize) - 1, pressBttn.Location.X / sideSize]);
+						int iter = currentMatch.WKnockedOutChessman.Count() - 1;
+						Wlabels[iter].Image = currentMatch.WKnockedOutChessman[iter].chessSprite;
+
 						chess[(pressBttn.Location.Y / sideSize) - 1, pressBttn.Location.X / sideSize] = null;
+					}
 				}
 				catch (IndexOutOfRangeException) { }
 
@@ -348,7 +396,7 @@ namespace Chess
 				prevBttn = pressBttn;
 			}
 		}
-		public void ResetBacklightChessboard()//Сброс подсветок на шахматной доске
+		private void ResetBacklightChessboard()//Сброс подсветок на шахматной доске
 		{
 			if (prevBttn != null)
 			{
@@ -362,7 +410,7 @@ namespace Chess
 				}
 			}
 		}
-
+			
 		private void button1_Click(object sender, EventArgs e)
 		{
 			Button pressBttn = sender as Button;

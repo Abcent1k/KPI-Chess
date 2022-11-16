@@ -10,10 +10,16 @@ namespace Chess
 		public bool WCastling;
 		public bool BCastling;
 
+		public List<Chessman> WKnockedOutChessman;
+		public List<Chessman> BKnockedOutChessman;
+
 		public Match(Chessboard cb)
 		{			
 			FileStream fs = new FileStream($"Saves\\{safeFile}.txt", FileMode.Create);
 			fs.Close();
+
+			WKnockedOutChessman = new List<Chessman>();
+			BKnockedOutChessman = new List<Chessman>();
 
 			roundW = true;
 
