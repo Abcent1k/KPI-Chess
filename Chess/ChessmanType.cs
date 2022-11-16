@@ -49,7 +49,8 @@ namespace Chess
 					if ((cb.chess[Y + y1, X + plus_or_minus]?.color ?? color) != color)//Бить
 						posSteps[Y + y1, X + plus_or_minus] = 2;
 
-					if(((Y == 4 && cb.chess[Y, X].color == 'b') || (Y == 3 && cb.chess[Y, X].color == 'w')) && (cb.chess[Y, X + 1]?.type == 'P' || cb.chess[Y, X - 1]?.type == 'P'))
+					if(((Y == 4 && cb.chess[Y, X].color == 'b') || (Y == 3 && cb.chess[Y, X].color == 'w')) && 
+						(cb.chess[Y, X + 1]?.type == 'P' || cb.chess[Y, X - 1]?.type == 'P'))
 					{														
 						if((X + plus_or_minus + 48 == (str[len-1])) && (X + plus_or_minus + 48 == (str[len - 4])))
 						{
@@ -125,6 +126,20 @@ namespace Chess
 				plus_or_minus *= -1;
 			}
 
+			if((cb.chess[Y, X].color == 'b' && cb.currentMatch.BCastling == true) ||
+				(cb.chess[Y, X].color == 'w' && cb.currentMatch.WCastling == true))
+			{
+				if (X == 0)
+				{
+					if (cb.chess[Y, 1] == null && cb.chess[Y, 2] == null && cb.chess[Y, 3] == null)
+						posSteps[Y, 4] = 4;
+				}
+				else
+				{
+					if (cb.chess[Y, 5] == null && cb.chess[Y, 6] == null)
+						posSteps[Y, 4] = 5;
+				}				
+			}			
 			return posSteps;
 		}
 
@@ -349,6 +364,22 @@ namespace Chess
 				}
 				plus_or_minus_y *= -1;
 			}
+
+			if ((cb.chess[Y, X].color == 'b' && cb.currentMatch.BCastling == true) ||
+				(cb.chess[Y, X].color == 'w' && cb.currentMatch.WCastling == true))
+			{
+				if (cb.chess[Y, 0].type == 'R')
+				{					
+					if (cb.chess[Y, 1] == null && cb.chess[Y, 2] == null && cb.chess[Y, 3] == null)					
+						posSteps[Y, 0] = 5;											
+				}
+				if(cb.chess[Y, 7].type == 'R')
+				{					
+					if (cb.chess[Y, 5] == null && cb.chess[Y, 6] == null)						
+						posSteps[Y, 7] = 4;								
+				}
+			}
+
 			return posSteps;
 		}
 
