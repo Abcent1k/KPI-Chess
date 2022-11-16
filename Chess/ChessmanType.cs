@@ -18,7 +18,7 @@ namespace Chess
 
 			int plus_or_minus = 1;
 
-			StreamReader sr = new StreamReader($"{cb.currentMatch.safeFile}.txt");
+			StreamReader sr = new StreamReader($"Saves\\{cb.currentMatch.safeFile}.txt");
 			string str = sr.ReadToEnd();
 			int len = str.Length;
 
@@ -159,12 +159,12 @@ namespace Chess
 						{
 							if (cb.chess[Y + y, X + x] == null)
 								posSteps[Y + y, X + x] = 1;
+
 							else if ((cb.chess[Y + y, X + x].color) != color)
 							{
 								posSteps[Y + y, X + x] = 2;
 								break;
-							}
-							
+							}							
 							else
 								break;
 						}
@@ -214,7 +214,7 @@ namespace Chess
 							if (cb.chess[Y + y, X + x] == null)
 								posSteps[Y + y, X + x] = 1;
 
-							if ((cb.chess[Y + y, X + x]?.color ?? color) != color)
+							else if ((cb.chess[Y + y, X + x].color) != color)
 							{
 								posSteps[Y + y, X + x] = 2;
 								break;
@@ -245,7 +245,7 @@ namespace Chess
 							if (cb.chess[Y + y, X + x] == null)
 								posSteps[Y + y, X + x] = 1;
 
-							if ((cb.chess[Y + y, X + x]?.color ?? color) != color)
+							else if ((cb.chess[Y + y, X + x].color) != color)
 							{
 								posSteps[Y + y, X + x] = 2;
 								break;

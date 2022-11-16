@@ -48,7 +48,7 @@ namespace Chess
 			//this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);//Пока лучше отключить
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.BackColor = System.Drawing.SystemColors.Control;
-			this.ClientSize = new System.Drawing.Size(sideSize * 8, sideSize * 8);
+			this.ClientSize = new System.Drawing.Size(sideSize * 8 + 40, sideSize * 8 + 40);
 			this.Controls.Add(this.button1);
 			this.Cursor = System.Windows.Forms.Cursors.Hand;
 			this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);

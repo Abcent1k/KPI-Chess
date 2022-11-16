@@ -9,7 +9,7 @@ namespace Chess
 
 		public Match(Chessboard cb)
 		{			
-			FileStream fs = new FileStream($"{safeFile}.txt", FileMode.Create);
+			FileStream fs = new FileStream($"Saves\\{safeFile}.txt", FileMode.Create);
 			fs.Close();
 
 			roundW = true;

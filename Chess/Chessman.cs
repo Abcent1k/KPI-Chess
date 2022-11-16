@@ -13,8 +13,7 @@ namespace Chess
 			else
 				throw new ArgumentException();
 						
-			chessSprite = new Bitmap($"Sprites\\{this.color}{type}.png");
-			//chessSprite = Image.FromFile($"Sprites\\{this.color}{type}.svg");
+			chessSprite = new Bitmap($"Sprites\\{this.color}{type}.png");			
 
 			posStepCalculated = false;
 			posSteps = new byte[8, 8];
