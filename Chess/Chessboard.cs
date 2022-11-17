@@ -23,14 +23,14 @@ namespace Chess
 
 		public string[,] defaultMap = new string[8, 8]//Карта начальных позиций фигур
 		{
-			{"bR","bH","bB","bQ","bK","bB","bH","bR"},
+			{"bR","","","","bK","","","bR"},
 			{"bP","bP","bP","bP","bP","bP","bP","bP"},
 			{"","","","","","","",""},
 			{"","","","","","","",""},
 			{"","","","","","","",""},
 			{"","","","","","","",""},
 			{"wP","wP","wP","wP","wP","wP","wP","wP"},
-			{"wR","wH","wB","wQ","wK","wB","wH","wR"},
+			{"wR","","","","wK","","","wR"},
 		};
 
 		public Color[,] colorMap = new Color[8, 8];//Карта цветов шахматной доски
@@ -39,8 +39,8 @@ namespace Chess
 
 		public Button[,] buttons = new Button[8, 8];//Массив с кнопками
 
-		public Label[] Wlabels = new Label[16];
-		public Label[] Blabels = new Label[16];
+		public Label[] WKnokoutlabels = new Label[16];
+		public Label[] BKnokoutlabels = new Label[16];
 
 		public Chessman[,] chess = new Chessman[8, 8];//Массив с фигурами
 
@@ -144,7 +144,7 @@ namespace Chess
 				Label labelHB = new Label();
 
 				labelVR.Text = labelVL.Text = (8 - i).ToString();
-				labelHB.Text = labelHT.Text = ((char)(65 + i)).ToString();
+				labelHB.Text = labelHT.Text = ((char)(97 + i)).ToString();
 
 				labelVL.Location = new Point(0, (i * sideSize) + sideSize/2 + borderSize);
 				labelVR.Location = new Point((8 * sideSize) + borderSize + 1, (i * sideSize) + sideSize / 2 + borderSize/2);
@@ -165,16 +165,17 @@ namespace Chess
 				Controls.Add(labelHT);
 				Controls.Add(labelHB);
 			}
-			Label labelBorder = new Label();
+			Label labelFrame = new Label();
 
-			labelBorder.Location = new Point(0, 0);
+			labelFrame.Location = new Point(0, 0);
 
-			labelBorder.Size = new Size(sideSize * 8 + borderSize * 2, sideSize * 8 + borderSize * 2);
+			labelFrame.Size = new Size(sideSize * 8 + borderSize * 2, sideSize * 8 + borderSize * 2);
 
-			labelBorder.BackColor = contour;
+			labelFrame.BackColor = contour;
 
-			Controls.Add(labelBorder);
+			Controls.Add(labelFrame);
 			
+			//Место где показываются выбитые фигуры
 			for (int i = 0; i < 16; i++)
 			{
 				Label labelKnokoutW = new Label();
@@ -191,8 +192,8 @@ namespace Chess
 				Controls.Add(labelKnokoutW);
 				Controls.Add(labelKnokoutB);
 
-				Wlabels[i] = labelKnokoutW;
-				Blabels[i] = labelKnokoutB;
+				WKnokoutlabels[i] = labelKnokoutW;
+				BKnokoutlabels[i] = labelKnokoutB;
 			}
 		}
 
@@ -218,7 +219,7 @@ namespace Chess
 					return;
 
 				//Рокировка
-				if (pressBttn.Image == arrowLeft)
+				if (pressBttn.Image == arrowLeft || pressBttn.Image == arrowRight)
 				{
 					//Обнуление возможности рокировки
 					if (chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize].color == 'b')
@@ -226,50 +227,72 @@ namespace Chess
 					else
 						currentMatch.WCastling = false;
 
-					if (chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize].type == 'R')
+					//Механика сохранения
+					StreamWriter sw = new StreamWriter(new FileStream($"Saves\\{currentMatch.safeFile}.txt", FileMode.Append));
+
+					if (currentMatch.roundW == true)
+						sw.Write('\n' + currentMatch.currentStep.ToString() + ". ");
+
+					sw.Write("0-0");
+					//
+
+					//Короткая 0-0
+					if (pressBttn.Image == arrowLeft)
 					{
-						chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize - 2] = chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize];
-						chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize] = null;
+						if (chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize].type == 'R')
+						{
+							chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize - 2] = chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize];
+							chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize] = null;
 
-						chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize - 1] = chess[pressBttn.Location.Y / sideSize, 4];
-						chess[pressBttn.Location.Y / sideSize, 4] = null;
+							chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize - 1] = chess[pressBttn.Location.Y / sideSize, 4];
+							chess[pressBttn.Location.Y / sideSize, 4] = null;
+						}
+						//Длинная 0-0-0
+						else if (chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize].type == 'K')
+						{
+							chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize - 2] = chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize];
+							chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize] = null;
+
+							chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize - 1] = chess[pressBttn.Location.Y / sideSize, 0];
+							chess[pressBttn.Location.Y / sideSize, 0] = null;
+
+							//Механика сохранения
+							sw.Write("-0");
+							//
+						}
 					}
-					else if (chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize].type == 'K')
-					{
-						chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize - 2] = chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize];
-						chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize] = null;
-
-						chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize - 1] = chess[pressBttn.Location.Y / sideSize, 0];
-						chess[pressBttn.Location.Y / sideSize, 0] = null;
-					}
-				}
-
-				else if (pressBttn.Image == arrowRight)
-				{
-					//Обнуление возможности рокировки
-					if (chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize].color == 'b')
-						currentMatch.BCastling = false;
 					else
-						currentMatch.WCastling = false;
-
-					if (chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize].type == 'R')
 					{
-						chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize + 3] = chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize];
-						chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize] = null;
+						//Длинная 0-0-0
+						if (chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize].type == 'R')
+						{
+							chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize + 3] = chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize];
+							chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize] = null;
 
-						chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize + 2] = chess[pressBttn.Location.Y / sideSize, 4];
-						chess[pressBttn.Location.Y / sideSize, 4] = null;
-					}
-					else if (chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize].type == 'K')
-					{
-						chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize + 2] = chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize];
-						chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize] = null;
+							chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize + 2] = chess[pressBttn.Location.Y / sideSize, 4];
+							chess[pressBttn.Location.Y / sideSize, 4] = null;
 
-						chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize + 1] = chess[pressBttn.Location.Y / sideSize, 7];
-						chess[pressBttn.Location.Y / sideSize, 7] = null;
+							//Механика сохранения
+							sw.Write("-0");
+							//
+						}
+						//Короткая 0-0
+						else if (chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize].type == 'K')
+						{
+							chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize + 2] = chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize];
+							chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize] = null;
+
+							chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize + 1] = chess[pressBttn.Location.Y / sideSize, 7];
+							chess[pressBttn.Location.Y / sideSize, 7] = null;
+						}
 					}
+					//Механика сохранения
+					sw.Write(" ");
+					sw.Close();
+					//
 				}
 
+				// En passant
 				else if (pressBttn.Image == border && (buttons[pressBttn.Location.Y / sideSize - 1, pressBttn.Location.X / sideSize].Image == x ||
 					buttons[pressBttn.Location.Y / sideSize + 1, pressBttn.Location.X / sideSize].Image == x))
 				{
@@ -278,12 +301,12 @@ namespace Chess
 						//Механика сохранения
 						StreamWriter sw = new StreamWriter(new FileStream($"Saves\\{currentMatch.safeFile}.txt", FileMode.Append));
 
-						if ((currentMatch.currentStep) % 2 == 0)
-							sw.Write('\n' + (currentMatch.currentStep / 2).ToString() + ". ");
+						if (currentMatch.roundW == true)
+							sw.Write('\n' + currentMatch.currentStep.ToString() + ". ");
 
 						sw.Write(chess[prevBttn.Location.Y / sideSize, prevBttn.Location.X / sideSize].type + ((char)(97 + prevBttn.Location.X / sideSize)).ToString() +
 							(8 - prevBttn.Location.Y / sideSize).ToString());
-						sw.Write("|" + ((char)(97 + pressBttn.Location.X / sideSize)).ToString() + (8 - pressBttn.Location.Y / sideSize).ToString() + " ");
+						sw.Write("/" + ((char)(97 + pressBttn.Location.X / sideSize)).ToString() + (8 - pressBttn.Location.Y / sideSize).ToString() + " ");
 
 						sw.Close();
 						//
@@ -292,7 +315,7 @@ namespace Chess
 						{
 							currentMatch.BKnockedOutChessman.Add(chess[(pressBttn.Location.Y / sideSize) + 1, pressBttn.Location.X / sideSize]);
 							int iter = currentMatch.BKnockedOutChessman.Count() - 1;
-							Blabels[iter].Image = currentMatch.BKnockedOutChessman[iter].chessSprite;
+							BKnokoutlabels[iter].Image = currentMatch.BKnockedOutChessman[iter].chessSprite;
 
 							chess[(pressBttn.Location.Y / sideSize) + 1, pressBttn.Location.X / sideSize] = null;
 						}
@@ -300,7 +323,7 @@ namespace Chess
 						{
 							currentMatch.WKnockedOutChessman.Add(chess[(pressBttn.Location.Y / sideSize) - 1, pressBttn.Location.X / sideSize]);
 							int iter = currentMatch.WKnockedOutChessman.Count() - 1;
-							Wlabels[iter].Image = currentMatch.WKnockedOutChessman[iter].chessSprite;
+							WKnokoutlabels[iter].Image = currentMatch.WKnockedOutChessman[iter].chessSprite;
 
 							chess[(pressBttn.Location.Y / sideSize) - 1, pressBttn.Location.X / sideSize] = null;
 						}
@@ -319,8 +342,8 @@ namespace Chess
 					//Механика сохранения
 					StreamWriter sw = new StreamWriter(new FileStream($"Saves\\{currentMatch.safeFile}.txt", FileMode.Append));
 
-					if ((currentMatch.currentStep) % 2 == 0)
-						sw.Write('\n' + (currentMatch.currentStep / 2).ToString() + ". ");
+					if (currentMatch.roundW == true)
+						sw.Write('\n' + currentMatch.currentStep.ToString() + ". ");
 
 					sw.Write(chess[prevBttn.Location.Y / sideSize, prevBttn.Location.X / sideSize].type + ((char)(97 + prevBttn.Location.X / sideSize)).ToString() +
 						(8 - prevBttn.Location.Y / sideSize).ToString());
@@ -332,13 +355,13 @@ namespace Chess
 						{
 							currentMatch.WKnockedOutChessman.Add(chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize]);
 							int iter = currentMatch.WKnockedOutChessman.Count() - 1;
-							Wlabels[iter].Image = currentMatch.WKnockedOutChessman[iter].chessSprite;
+							WKnokoutlabels[iter].Image = currentMatch.WKnockedOutChessman[iter].chessSprite;
 						}
 						else if (chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize]?.color == 'b')
 						{ 
 							currentMatch.BKnockedOutChessman.Add(chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize]);
 							int iter = currentMatch.BKnockedOutChessman.Count() - 1;
-							Blabels[iter].Image = currentMatch.BKnockedOutChessman[iter].chessSprite;
+							BKnokoutlabels[iter].Image = currentMatch.BKnockedOutChessman[iter].chessSprite;
 						}
 						//Механика сохранения
 						sw.Write(":");
@@ -356,13 +379,10 @@ namespace Chess
 					chess[prevBttn.Location.Y / sideSize, prevBttn.Location.X / sideSize] = null;
 				}
 
-				//Взятие на проходе
-				
-
-				
-
-				currentMatch.currentStep ++;
-				currentMatch.roundW = !currentMatch.roundW;//Смена хода
+				//Смена хода + счет хода
+				if(currentMatch.roundW == true)
+					currentMatch.currentStep ++;
+				currentMatch.roundW = !currentMatch.roundW;
 
 				//Обнуление возможности рокировки
 				try
