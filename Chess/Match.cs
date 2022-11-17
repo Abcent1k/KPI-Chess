@@ -5,7 +5,7 @@ namespace Chess
 	{
 		public bool roundW;		
 		public string safeFile = ("SF " + (DateTime.Now).ToString().Replace(":", "."));
-		public int currentStep = 1;
+		public int currentStep = 2;
 
 		public bool WCastling;
 		public bool BCastling;

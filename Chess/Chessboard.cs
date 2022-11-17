@@ -270,9 +270,62 @@ namespace Chess
 					}
 				}
 
+				else if (pressBttn.Image == border && (buttons[pressBttn.Location.Y / sideSize - 1, pressBttn.Location.X / sideSize].Image == x ||
+					buttons[pressBttn.Location.Y / sideSize + 1, pressBttn.Location.X / sideSize].Image == x))
+				{
+					try
+					{
+						//Механика сохранения
+						StreamWriter sw = new StreamWriter(new FileStream($"Saves\\{currentMatch.safeFile}.txt", FileMode.Append));
+
+						if ((currentMatch.currentStep) % 2 == 0)
+							sw.Write('\n' + (currentMatch.currentStep / 2).ToString() + ". ");
+
+						sw.Write(chess[prevBttn.Location.Y / sideSize, prevBttn.Location.X / sideSize].type + ((char)(97 + prevBttn.Location.X / sideSize)).ToString() +
+							(8 - prevBttn.Location.Y / sideSize).ToString());
+						sw.Write("|" + ((char)(97 + pressBttn.Location.X / sideSize)).ToString() + (8 - pressBttn.Location.Y / sideSize).ToString() + " ");
+
+						sw.Close();
+						//
+
+						if (buttons[(pressBttn.Location.Y / sideSize) + 1, pressBttn.Location.X / sideSize].Image == x)
+						{
+							currentMatch.BKnockedOutChessman.Add(chess[(pressBttn.Location.Y / sideSize) + 1, pressBttn.Location.X / sideSize]);
+							int iter = currentMatch.BKnockedOutChessman.Count() - 1;
+							Blabels[iter].Image = currentMatch.BKnockedOutChessman[iter].chessSprite;
+
+							chess[(pressBttn.Location.Y / sideSize) + 1, pressBttn.Location.X / sideSize] = null;
+						}
+						else if (buttons[(pressBttn.Location.Y / sideSize) - 1, pressBttn.Location.X / sideSize].Image == x)
+						{
+							currentMatch.WKnockedOutChessman.Add(chess[(pressBttn.Location.Y / sideSize) - 1, pressBttn.Location.X / sideSize]);
+							int iter = currentMatch.WKnockedOutChessman.Count() - 1;
+							Wlabels[iter].Image = currentMatch.WKnockedOutChessman[iter].chessSprite;
+
+							chess[(pressBttn.Location.Y / sideSize) - 1, pressBttn.Location.X / sideSize] = null;
+						}
+
+						//Перестановка фигур
+						chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize] = chess[prevBttn.Location.Y / sideSize, prevBttn.Location.X / sideSize];
+						chess[prevBttn.Location.Y / sideSize, prevBttn.Location.X / sideSize] = null;
+
+					}
+					catch (IndexOutOfRangeException) { }
+				}
+
 				//Реализация бить или ходить
 				else
 				{
+					//Механика сохранения
+					StreamWriter sw = new StreamWriter(new FileStream($"Saves\\{currentMatch.safeFile}.txt", FileMode.Append));
+
+					if ((currentMatch.currentStep) % 2 == 0)
+						sw.Write('\n' + (currentMatch.currentStep / 2).ToString() + ". ");
+
+					sw.Write(chess[prevBttn.Location.Y / sideSize, prevBttn.Location.X / sideSize].type + ((char)(97 + prevBttn.Location.X / sideSize)).ToString() +
+						(8 - prevBttn.Location.Y / sideSize).ToString());
+					//
+
 					if (pressBttn.Image == border)
 					{
 						if (chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize]?.color == 'w')
@@ -287,40 +340,28 @@ namespace Chess
 							int iter = currentMatch.BKnockedOutChessman.Count() - 1;
 							Blabels[iter].Image = currentMatch.BKnockedOutChessman[iter].chessSprite;
 						}
+						//Механика сохранения
+						sw.Write(":");
+						//
 					}
+					//Механика сохранения
+					else
+						sw.Write("-");
+					sw.Write(((char)(97 + pressBttn.Location.X / sideSize)).ToString() + (8 - pressBttn.Location.Y / sideSize).ToString() + " ");
+					sw.Close();
+					//
+
+					//Перестановка фигур
 					chess[pressBttn.Location.Y / sideSize, pressBttn.Location.X / sideSize] = chess[prevBttn.Location.Y / sideSize, prevBttn.Location.X / sideSize];
 					chess[prevBttn.Location.Y / sideSize, prevBttn.Location.X / sideSize] = null;
 				}
 
 				//Взятие на проходе
-				try
-				{
-					if (buttons[(pressBttn.Location.Y / sideSize) + 1, pressBttn.Location.X / sideSize].Image == x)
-					{
-						currentMatch.BKnockedOutChessman.Add(chess[(pressBttn.Location.Y / sideSize) + 1, pressBttn.Location.X / sideSize]);
-						int iter = currentMatch.BKnockedOutChessman.Count() - 1;
-						Blabels[iter].Image = currentMatch.BKnockedOutChessman[iter].chessSprite;
+				
 
-						chess[(pressBttn.Location.Y / sideSize) + 1, pressBttn.Location.X / sideSize] = null;
-					}
-					else if (buttons[(pressBttn.Location.Y / sideSize) - 1, pressBttn.Location.X / sideSize].Image == x)
-					{
-						currentMatch.WKnockedOutChessman.Add(chess[(pressBttn.Location.Y / sideSize) - 1, pressBttn.Location.X / sideSize]);
-						int iter = currentMatch.WKnockedOutChessman.Count() - 1;
-						Wlabels[iter].Image = currentMatch.WKnockedOutChessman[iter].chessSprite;
+				
 
-						chess[(pressBttn.Location.Y / sideSize) - 1, pressBttn.Location.X / sideSize] = null;
-					}
-				}
-				catch (IndexOutOfRangeException) { }
-
-				//Механика сохранения
-				StreamWriter sw = new StreamWriter(new FileStream($"Saves\\{currentMatch.safeFile}.txt", FileMode.Append));
-				sw.Write(" " + ((char)(65 + prevBttn.Location.X / sideSize)).ToString() + (8 - prevBttn.Location.Y / sideSize).ToString() + "-");//Сохраниние результатов
-				sw.Write(((char)(65 + pressBttn.Location.X / sideSize)).ToString() + (8 - pressBttn.Location.Y / sideSize).ToString());//Сохраниние результатов
-				sw.Close();
-
-				//currentMatch.currentStep ++;
+				currentMatch.currentStep ++;
 				currentMatch.roundW = !currentMatch.roundW;//Смена хода
 
 				//Обнуление возможности рокировки
@@ -373,30 +414,37 @@ namespace Chess
 					pressBttn.BackColor = lightPushedCell;
 				else 
 					pressBttn.BackColor = darkPushedCell;
-
-				//Подсветка возможных ходов
-				for (int i = 0; i < 8; i++)
-				{
-					for (int j = 0; j < 8; j++)
-					{
-						if (pressChess?.posSteps[i, j] == 1)							
-								buttons[i, j].Image = dot;
-						else if (pressChess?.posSteps[i, j] == 2)
-							buttons[i, j].Image = border;
-						else if (pressChess?.posSteps[i, j] == 3)
-							buttons[i, j].Image = x;
-						else if (pressChess?.posSteps[i, j] == 4)
-							buttons[i, j].Image = arrowLeft;
-						else if (pressChess?.posSteps[i, j] == 5)
-							buttons[i, j].Image = arrowRight;
-						buttons[i, j].ImageAlign = ContentAlignment.MiddleCenter;
-					}
-				}
+				
+				BacklightChessboard(pressChess);
 
 				prevBttn = pressBttn;
 			}
 		}
-		private void ResetBacklightChessboard()//Сброс подсветок на шахматной доске
+
+		//Подсветка возможных ходов
+		private void BacklightChessboard(Chessman chessman)
+		{
+			for (int i = 0; i < 8; i++)
+			{
+				for (int j = 0; j < 8; j++)
+				{
+					if (chessman?.posSteps[i, j] == 1)
+						buttons[i, j].Image = dot;
+					else if (chessman?.posSteps[i, j] == 2)
+						buttons[i, j].Image = border;
+					else if (chessman?.posSteps[i, j] == 3)
+						buttons[i, j].Image = x;
+					else if (chessman?.posSteps[i, j] == 4)
+						buttons[i, j].Image = arrowLeft;
+					else if (chessman?.posSteps[i, j] == 5)
+						buttons[i, j].Image = arrowRight;
+					buttons[i, j].ImageAlign = ContentAlignment.MiddleCenter;
+				}
+			}
+		}
+
+		//Сброс подсветок на шахматной доске
+		private void ResetBacklightChessboard()
 		{
 			if (prevBttn != null)
 			{

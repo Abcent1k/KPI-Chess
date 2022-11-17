@@ -49,17 +49,17 @@ namespace Chess
 					if ((cb.chess[Y + y1, X + plus_or_minus]?.color ?? color) != color)//Бить
 						posSteps[Y + y1, X + plus_or_minus] = 2;
 
-					if(((Y == 4 && cb.chess[Y, X].color == 'b') || (Y == 3 && cb.chess[Y, X].color == 'w')) && 
-						(cb.chess[Y, X + 1]?.type == 'P' || cb.chess[Y, X - 1]?.type == 'P'))
+					if(((Y == 4 && color == 'b') || (Y == 3 && color == 'w')) && 
+						((X - 1 >=0 && cb.chess[Y, X - 1]?.type == 'P') || cb.chess[Y, X + 1]?.type == 'P'))
 					{														
-						if((X + plus_or_minus + 48 == (str[len-1])) && (X + plus_or_minus + 48 == (str[len - 4])))
+						if(((char)(X + plus_or_minus + 97) == (str[len-3])) && ((char)(X + plus_or_minus + 97) == (str[len - 6])))
 						{
-							if (str[len - 5] == 1 + 48)
+							if (str[len - 5] == (char)(7 + 48))
 							{
 								posSteps[3, X + plus_or_minus] = 3;
 								posSteps[2, X + plus_or_minus] = 2;
 							}
-							else if (str[len - 5] == 6 + 48)
+							else if (str[len - 5] == (char)(2 + 48))
 							{
 								posSteps[4, X + plus_or_minus] = 3;
 								posSteps[5, X + plus_or_minus] = 2;
