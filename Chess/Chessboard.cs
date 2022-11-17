@@ -293,8 +293,8 @@ namespace Chess
 				}
 
 				// En passant
-				else if (pressBttn.Image == border && (buttons[pressBttn.Location.Y / sideSize - 1, pressBttn.Location.X / sideSize].Image == x ||
-					buttons[pressBttn.Location.Y / sideSize + 1, pressBttn.Location.X / sideSize].Image == x))
+				else if (pressBttn.Image == border && ((pressBttn.Location.Y / sideSize - 1 >= 0 && (buttons[pressBttn.Location.Y / sideSize - 1, pressBttn.Location.X / sideSize].Image == x)) ||
+					(pressBttn.Location.Y / sideSize + 1 <= 7 && buttons[pressBttn.Location.Y / sideSize + 1, pressBttn.Location.X / sideSize].Image == x)))
 				{
 					try
 					{
