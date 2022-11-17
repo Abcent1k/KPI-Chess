@@ -316,8 +316,8 @@ namespace Chess
 
 				//Механика сохранения
 				StreamWriter sw = new StreamWriter(new FileStream($"Saves\\{currentMatch.safeFile}.txt", FileMode.Append));
-				sw.Write(" " + (prevBttn.Location.Y / sideSize).ToString() + (prevBttn.Location.X / sideSize).ToString() + "-");//Сохраниние результатов
-				sw.Write((pressBttn.Location.Y / sideSize).ToString() + (pressBttn.Location.X / sideSize).ToString());//Сохраниние результатов
+				sw.Write(" " + ((char)(65 + prevBttn.Location.X / sideSize)).ToString() + (8 - prevBttn.Location.Y / sideSize).ToString() + "-");//Сохраниние результатов
+				sw.Write(((char)(65 + pressBttn.Location.X / sideSize)).ToString() + (8 - pressBttn.Location.Y / sideSize).ToString());//Сохраниние результатов
 				sw.Close();
 
 				//currentMatch.currentStep ++;
