@@ -5,7 +5,7 @@ namespace Chess
 	public partial class Chessboard : Form
 	{
 		public static int sideSize = 90;//Размер клетки (кнопки)
-		public int borderSize = 20;
+		public int borderSize = 25;
 		public Bitmap dot = new Bitmap (new Bitmap($"Sprites\\1dot.png"),new Size(sideSize - 3, sideSize - 3));
 		public Bitmap border = new Bitmap (new Bitmap($"Sprites\\1border.png"),new Size(sideSize - 3, sideSize - 3));
 		public Bitmap x = new Bitmap($"Sprites\\x.png");
@@ -14,7 +14,7 @@ namespace Chess
 
 		public Color lightCell = Color.FromArgb(255, 237, 252, 248);//Светлый цвет для карты цветов
 		public Color darkCell = Color.FromArgb(255, 0, 87, 62);//Темный цвет для карты цветов
-		public Color contour = Color.FromArgb(255, 0, 43, 29);
+		public Color frame = Color.FromArgb(255, 0, 43, 29);//Цвет рамки вокруг шахматной доски
 
 		public Color lightPushedCell = Color.LightGreen;//Цвет нажатой кнопки, если клетка под фигурой светлая
 		public Color darkPushedCell = Color.MediumSeaGreen;//Цвет нажатой кнопки, если клетка под фигурой темная
@@ -147,18 +147,20 @@ namespace Chess
 				labelHB.Text = labelHT.Text = ((char)(97 + i)).ToString();
 
 				labelVL.Location = new Point(0, (i * sideSize) + sideSize/2 + borderSize);
-				labelVR.Location = new Point((8 * sideSize) + borderSize + 1, (i * sideSize) + sideSize / 2 + borderSize/2);
+				labelVR.Location = new Point((8 * sideSize) + borderSize, (i * sideSize) + sideSize / 2 + borderSize/2);
 
-				labelHT.Location = new Point((i * sideSize) + sideSize / 2 + borderSize / 2, 1);				
+				labelHT.Location = new Point((i * sideSize) + sideSize / 2 + borderSize / 2, 0);				
 				labelHB.Location = new Point((i * sideSize) + sideSize / 2 + borderSize / 2, (8 * sideSize) + 2 * borderSize/2);
 
 				labelVR.Font = labelHB.Font = labelVL.Font = labelHT.Font = new Font("Lucida Console", 12.0F, FontStyle.Regular);
 
 				labelVR.ForeColor = labelHB.ForeColor = labelVL.ForeColor = labelHT.ForeColor = lightCell;
 
-				labelVR.Size = labelHB.Size = labelVL.Size = labelHT.Size = new Size(borderSize - 2, borderSize - 2);
+				labelVR.Size = labelHB.Size = labelVL.Size = labelHT.Size = new Size(borderSize, borderSize);
 
-				labelVR.BackColor = labelHB.BackColor = labelVL.BackColor = labelHT.BackColor = contour;
+				labelVR.BackColor = labelHB.BackColor = labelVL.BackColor = labelHT.BackColor = frame;
+
+				labelVR.TextAlign = labelHB.TextAlign = labelVL.TextAlign = labelHT.TextAlign = ContentAlignment.MiddleCenter;
 
 				Controls.Add(labelVL);
 				Controls.Add(labelVR);
@@ -171,7 +173,7 @@ namespace Chess
 
 			labelFrame.Size = new Size(sideSize * 8 + borderSize * 2, sideSize * 8 + borderSize * 2);
 
-			labelFrame.BackColor = contour;
+			labelFrame.BackColor = frame;
 
 			Controls.Add(labelFrame);
 			
@@ -487,12 +489,16 @@ namespace Chess
 			currentMatch = new Match(this);			
 		}
 
-		private void Chessboard_Load(object sender, EventArgs e)
-		{			
-		}
-
-		private void Chessboard_Deactivate(object sender, EventArgs e)
-		{			
+		private void Chessboard_ResizeEnd(object sender, EventArgs e)
+		{
+			//for (int i = 0; i < 8; i++)
+			//{
+			//	for (int j = 0; j < 8; j++)
+			//	{
+			//		if(buttons[i, j] != null)
+			//			buttons[i, j].Size = new Size(50, 50);
+			//	}
+			//}
 		}
 	}
 }

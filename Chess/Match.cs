@@ -1,21 +1,27 @@
 ﻿
+using System.IO;
+
 namespace Chess
 {
 	public partial class Match
 	{
-		public bool roundW;		
-		public string safeFile = ("SF " + (DateTime.Now).ToString().Replace(":", "."));
-		public int currentStep = 1;
+		public bool roundW;//Чей ход
+		public int currentStep = 1;// Номер хода
 
-		public bool WCastling;
-		public bool BCastling;
+		public string savesPath = "Saves";//Путь к папке с сохранениями
+		public string safeFile = ("SF " + (DateTime.Now).ToString().Replace(":", "."));//Файл сохранения	
 
-		public List<Chessman> WKnockedOutChessman;
-		public List<Chessman> BKnockedOutChessman;
+		public bool WCastling;//Возможность совершить рокировку белым
+		public bool BCastling;//Возможность совершить рокировку черным
+
+		public List<Chessman> WKnockedOutChessman;//Белые выбитые фигуры
+		public List<Chessman> BKnockedOutChessman;//Черные выбитые фигуры
 
 		public Match(Chessboard cb)
-		{			
-			FileStream fs = new FileStream($"Saves\\{safeFile}.txt", FileMode.Create);
+		{
+			Directory.CreateDirectory(savesPath);
+
+			FileStream fs = new FileStream($"{savesPath}\\{safeFile}.txt", FileMode.Create);
 			fs.Close();
 
 			WKnockedOutChessman = new List<Chessman>();

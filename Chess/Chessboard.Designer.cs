@@ -44,18 +44,16 @@ namespace Chess
 			this.button1.Click += new System.EventHandler(this.button1_Click);
 			// 
 			// Chessboard
-			// 
-			//this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);//Пока лучше отключить
-			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			// 			
+			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
 			this.BackColor = darkPushedCell;
-			this.ClientSize = new System.Drawing.Size(sideSize * 8 + 40 + borderSize * 2 + sideSize * 4, sideSize * 8 + 40);
+			this.ClientSize = new System.Drawing.Size(sideSize * 8 + borderSize * 4 + sideSize * 4, sideSize * 8 + borderSize * 2);			
 			this.Controls.Add(this.button1);
 			this.Cursor = System.Windows.Forms.Cursors.Hand;
 			this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 			this.Name = "Chessboard";
 			this.Text = "Chess";
-			this.Deactivate += new System.EventHandler(this.Chessboard_Deactivate);
-			this.Load += new System.EventHandler(this.Chessboard_Load);
+			this.ResizeEnd += new System.EventHandler(this.Chessboard_ResizeEnd);
 			this.ResumeLayout(false);
 
 		}
