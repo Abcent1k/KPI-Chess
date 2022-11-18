@@ -34,7 +34,7 @@ namespace Chess
 			// 
 			// button1
 			// 
-			this.button1.Location = new System.Drawing.Point(231, 298);			
+			this.button1.Location = new System.Drawing.Point(231, 298);
 			this.button1.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 			this.button1.Name = "button1";
 			this.button1.Size = new System.Drawing.Size(262, 123);
@@ -44,15 +44,19 @@ namespace Chess
 			this.button1.Click += new System.EventHandler(this.button1_Click);
 			// 
 			// Chessboard
-			// 			
+			// 
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
-			this.BackColor = darkPushedCell;
-			this.ClientSize = new System.Drawing.Size(sideSize * 8 + borderSize * 4 + sideSize * 4, sideSize * 8 + borderSize * 2);			
+			this.ClientSize = new System.Drawing.Size(799, 770);
 			this.Controls.Add(this.button1);
 			this.Cursor = System.Windows.Forms.Cursors.Hand;
 			this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+			this.MaximizeBox = false;
+			this.MinimumSize = new System.Drawing.Size(630, 447);
 			this.Name = "Chessboard";
+			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
 			this.Text = "Chess";
+			this.Load += new System.EventHandler(this.Chessboard_Load);
+			this.ResizeBegin += new System.EventHandler(this.Chessboard_ResizeBegin);
 			this.ResizeEnd += new System.EventHandler(this.Chessboard_ResizeEnd);
 			this.ResumeLayout(false);
 

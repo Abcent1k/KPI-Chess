@@ -24,6 +24,8 @@ namespace Chess
 			FileStream fs = new FileStream($"{savesPath}\\{safeFile}.txt", FileMode.Create);
 			fs.Close();
 
+			cb.ClientSize = new Size(cb.buttonSize * 12 + cb.frameSize * 4, cb.buttonSize * 8 + cb.frameSize * 2);			
+
 			WKnockedOutChessman = new List<Chessman>();
 			BKnockedOutChessman = new List<Chessman>();
 

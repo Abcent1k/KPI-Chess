@@ -13,7 +13,7 @@ namespace Chess
 			else
 				throw new ArgumentException();
 						
-			chessSprite = new Bitmap($"Sprites\\{this.color}{type}.png");			
+			chessSprite = new Bitmap($"Sprites\\ChessSprites\\{this.color}{type}.png");			
 
 			posStepCalculated = false;
 			posSteps = new byte[8, 8];
@@ -30,6 +30,7 @@ namespace Chess
 			}
 			return posSteps;
 		}
+
 		public abstract byte[,] PossibleSteps(Chessboard cb);
 
 		public void GetIter(Chessboard cb, ref int X, ref int Y)
@@ -50,7 +51,9 @@ namespace Chess
 		public byte[,] posSteps;
 
 		public Bitmap chessSprite;
+
 		public char type { get; }
+
 		public char color { get; }
 
 		public bool posStepCalculated;//Маркер, посчитаны ли возможные ходы выбраной фигуры

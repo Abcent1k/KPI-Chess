@@ -50,7 +50,7 @@ namespace Chess
 						posSteps[Y + y1, X + plus_or_minus] = 2;
 
 					if(((Y == 4 && color == 'b') || (Y == 3 && color == 'w')) && 
-						((X - 1 >=0 && cb.chess[Y, X - 1]?.type == 'P') || cb.chess[Y, X + 1]?.type == 'P'))
+						((X - 1 >=0 && cb.chess[Y, X - 1]?.type == 'P') || (X + 1 >= 7 && cb.chess[Y, X + 1]?.type == 'P')))
 					{														
 						if(((char)(X + plus_or_minus + 97) == (str[len-3])) && ((char)(X + plus_or_minus + 97) == (str[len - 6])))
 						{
