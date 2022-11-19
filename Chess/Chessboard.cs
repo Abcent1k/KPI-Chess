@@ -1,3 +1,4 @@
+using Microsoft.VisualBasic;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
@@ -28,7 +29,6 @@ namespace Chess
 		private int oldWidth, oldHeight;
 		private float formSidesProportion; // соотношение сторон формы
 
-
 		public string[,] defaultMap = new string[8, 8]//Карта начальных позиций фигур
 		{
 			{"bR","bH","bB","bQ","bK","bB","bH","bR"},
@@ -47,11 +47,13 @@ namespace Chess
 
 		public Button[,] buttons = new Button[8, 8];//Массив с кнопками
 
+		public Chessman[,] chess = new Chessman[8, 8];//Массив с фигурами
+
 		public Label labelWKnokout;
 		public Label labelBKnokout;
 
-		public Label[] WKnokoutlabels = new Label[16];
-		public Label[] BKnokoutlabels = new Label[16];
+		public Label[] WlabelsKnokout = new Label[16];
+		public Label[] BlabelsKnokout = new Label[16];
 
 		public Label labelFrame;
 
@@ -60,7 +62,11 @@ namespace Chess
 		public Label[] HTLabels = new Label[8];
 		public Label[] HBLabels = new Label[8];
 
-		public Chessman[,] chess = new Chessman[8, 8];//Массив с фигурами
+		private void DrawImage(PaintEventArgs e)
+		{			
+			Pen myPen = new Pen(Color.Black, 3);
+			e.Graphics.DrawRectangle(myPen, 20, 10, 100, 50);
+		}
 
 		public Chessboard()
 		{
@@ -93,8 +99,10 @@ namespace Chess
 				for (int j = 0; j < 8; j++)
 				{
 					if (chess[i, j] != null)
-						chess[i, j].chessSprite = new Bitmap(chess[i, j].chessSprite, new Size(buttonSize - 10, buttonSize - 10));
-					buttons[i, j].BackgroundImage = chess[i, j]?.chessSprite;					
+						buttons[i, j].BackgroundImage = new Bitmap(chess[i, j].chessSprite, new Size(buttonSize - 10, buttonSize - 10));
+					else
+						buttons[i, j].BackgroundImage = null;
+
 					buttons[i, j].BackgroundImageLayout = ImageLayout.Center;					
 				}
 			}
@@ -110,8 +118,8 @@ namespace Chess
 					buttons[i, j].Visible = showElement;
 					if ((i * 8 + j)<16)
 					{
-						WKnokoutlabels[i * 8 + j].Visible = showElement;
-						BKnokoutlabels[i * 8 + j].Visible = showElement;
+						WlabelsKnokout[i * 8 + j].Visible = showElement;
+						BlabelsKnokout[i * 8 + j].Visible = showElement;
 					}
 				}
 				VLLabels[i].Visible = VRLabels[i].Visible = HTLabels[i].Visible = HBLabels[i].Visible = showElement;
@@ -126,6 +134,8 @@ namespace Chess
 			cross = new Bitmap($"Sprites\\cross.png");
 			arrowLeft = new Bitmap(new Bitmap($"Sprites\\arrowLeft.png"), new Size(buttonSize - 1, buttonSize - 1));
 			arrowRight = new Bitmap(new Bitmap($"Sprites\\arrowRight.png"), new Size(buttonSize - 1, buttonSize - 1));
+
+			frameSize = (int)((float)(buttonSize) / 3.6);
 
 			formSidesProportion = ((float)(buttonSize * 12 + frameSize * 4) / (float)(buttonSize * 8 + frameSize * 2));
 
@@ -203,7 +213,7 @@ namespace Chess
 				labelHT.Location = new Point((i * buttonSize) + buttonSize / 2 + frameSize / 2, 0);				
 				labelHB.Location = new Point((i * buttonSize) + buttonSize / 2 + frameSize / 2, (8 * buttonSize) + 2 * frameSize/2);
 
-				labelVL.Font = labelVR.Font = labelHT.Font = labelHB.Font = new Font("Lucida Console", 12.0F, FontStyle.Regular);
+				labelVL.Font = labelVR.Font = labelHT.Font = labelHB.Font = new Font("Lucida Console", frameSize / 2, FontStyle.Regular);
 
 				labelVL.ForeColor = labelVR.ForeColor = labelHT.ForeColor = labelHB.ForeColor = lightCell;
 
@@ -247,11 +257,10 @@ namespace Chess
 				Controls.Add(labelKnokoutW);
 				Controls.Add(labelKnokoutB);
 
-				WKnokoutlabels[i] = labelKnokoutW;
-				BKnokoutlabels[i] = labelKnokoutB;
+				WlabelsKnokout[i] = labelKnokoutW;
+				BlabelsKnokout[i] = labelKnokoutB;
 			}
 		}
-
 
 		private void OnFigurePress(object sender, EventArgs e)//Ивент нажатия на фигуру
 		{
@@ -369,7 +378,7 @@ namespace Chess
 						{
 							currentMatch.BKnockedOutChessman.Add(chess[(pressBttn.Location.Y / buttonSize) + 1, pressBttn.Location.X / buttonSize]);
 							int iter = currentMatch.BKnockedOutChessman.Count() - 1;
-							BKnokoutlabels[iter].Image = currentMatch.BKnockedOutChessman[iter].chessSprite;
+							BlabelsKnokout[iter].Image = new Bitmap(currentMatch.BKnockedOutChessman[iter].chessSprite, new Size(buttonSize - 10, buttonSize - 10));
 
 							chess[(pressBttn.Location.Y / buttonSize) + 1, pressBttn.Location.X / buttonSize] = null;
 						}
@@ -377,7 +386,7 @@ namespace Chess
 						{
 							currentMatch.WKnockedOutChessman.Add(chess[(pressBttn.Location.Y / buttonSize) - 1, pressBttn.Location.X / buttonSize]);
 							int iter = currentMatch.WKnockedOutChessman.Count() - 1;
-							WKnokoutlabels[iter].Image = currentMatch.WKnockedOutChessman[iter].chessSprite;
+							WlabelsKnokout[iter].Image = new Bitmap(currentMatch.WKnockedOutChessman[iter].chessSprite, new Size(buttonSize - 10, buttonSize - 10));
 
 							chess[(pressBttn.Location.Y / buttonSize) - 1, pressBttn.Location.X / buttonSize] = null;
 						}
@@ -409,13 +418,13 @@ namespace Chess
 						{
 							currentMatch.WKnockedOutChessman.Add(chess[pressBttn.Location.Y / buttonSize, pressBttn.Location.X / buttonSize]);
 							int iter = currentMatch.WKnockedOutChessman.Count() - 1;
-							WKnokoutlabels[iter].Image = currentMatch.WKnockedOutChessman[iter].chessSprite;
+							WlabelsKnokout[iter].Image = new Bitmap(currentMatch.WKnockedOutChessman[iter].chessSprite, new Size(buttonSize - 10, buttonSize - 10));
 						}
 						else if (chess[pressBttn.Location.Y / buttonSize, pressBttn.Location.X / buttonSize]?.color == 'b')
 						{ 
 							currentMatch.BKnockedOutChessman.Add(chess[pressBttn.Location.Y / buttonSize, pressBttn.Location.X / buttonSize]);
 							int iter = currentMatch.BKnockedOutChessman.Count() - 1;
-							BKnokoutlabels[iter].Image = currentMatch.BKnockedOutChessman[iter].chessSprite;
+							BlabelsKnokout[iter].Image = new Bitmap(currentMatch.BKnockedOutChessman[iter].chessSprite, new Size(buttonSize - 10, buttonSize - 10));
 						}
 						//Механика сохранения
 						sw.Write(":");
@@ -552,6 +561,8 @@ namespace Chess
 
 		}
 
+
+
 		private void Chessboard_ResizeEnd(object sender, EventArgs e)
 		{
 			if (buttons[0, 0] == null || (oldHeight == Height && oldWidth == Width))
@@ -561,30 +572,32 @@ namespace Chess
 			int width = Width - 18;
 
 			// если изменилась ширина с прошлого раза
-			if (oldWidth != Width)
-			{				
-				ClientSize = new Size(width , (int)(width * 1f / formSidesProportion));
-				height = Height - 47;
-			}
+			//if (oldWidth != Width)
+			//{				
+			//	ClientSize = new Size(width , (int)(width * 1f / formSidesProportion));
+			//	height = Height - 47;
+			//}
 
 			// если изменилась высота с прошлого раза
 			if (oldHeight != Height)
 			{
-				ClientSize = new Size((int)(height * formSidesProportion) , height);				
+				ClientSize = new Size((int)(height * formSidesProportion), height);
 				width = Width - 18;
 			}
 
-			buttonSize = (frameSize * -1 / 4) + (width - height - frameSize) / 4;//Размер стороны кнопки при изменении размера окна
+			buttonSize = (int)(9.0 / 41.0 * (float)(width - height));//Размер стороны кнопки при изменении размера окна
+
+			frameSize = (int)((float)(buttonSize) / 3.6);
 
 			ClientSize = new Size(buttonSize * 12 + frameSize * 4, buttonSize * 8 + frameSize * 2);//Окончательно меняем размер окна					
 
 			labelFrame.Size = new Size(buttonSize * 8 + frameSize * 2, buttonSize * 8 + frameSize * 2);//Размер рамки
 
-			dot = new Bitmap(dot, new Size(buttonSize, buttonSize));
-			circle = new Bitmap(circle, new Size(buttonSize - 1, buttonSize - 1));
-			cross = new Bitmap(cross, new Size(buttonSize, buttonSize));
-			arrowLeft = new Bitmap(arrowLeft, new Size(buttonSize - 1, buttonSize - 1));
-			arrowRight = new Bitmap(arrowRight, new Size(buttonSize - 1, buttonSize - 1));
+			dot = new Bitmap(new Bitmap($"Sprites\\dot.png"), new Size(buttonSize, buttonSize));
+			circle = new Bitmap(new Bitmap($"Sprites\\circle.png"), new Size(buttonSize - 1, buttonSize - 1));
+			cross = new Bitmap(new Bitmap($"Sprites\\cross.png"), new Size(buttonSize, buttonSize));
+			arrowLeft = new Bitmap(new Bitmap($"Sprites\\arrowLeft.png"), new Size(buttonSize - 1, buttonSize - 1));
+			arrowRight = new Bitmap(new Bitmap($"Sprites\\arrowRight.png"), new Size(buttonSize - 1, buttonSize - 1));
 
 			//Элементы становятся невидимыми
 			RedrawingUI(false);
@@ -597,7 +610,7 @@ namespace Chess
 					buttons[i, j].Size = new Size(buttonSize, buttonSize);
 
 					if (buttons[i, j].BackgroundImage!= null)
-					buttons[i, j].BackgroundImage = new Bitmap(buttons[i, j].BackgroundImage, new Size(buttonSize - 10, buttonSize - 10));
+					buttons[i, j].BackgroundImage = new Bitmap(chess[i, j].chessSprite, new Size(buttonSize - 10, buttonSize - 10));
 				}
 
 				VLLabels[i].Location = new Point(0 , (i * buttonSize) + buttonSize / 2 + frameSize);
@@ -605,19 +618,23 @@ namespace Chess
 
 				HTLabels[i].Location = new Point((i * buttonSize) + buttonSize / 2 + frameSize / 2, 0);
 				HBLabels[i].Location = new Point((i * buttonSize) + buttonSize / 2 + frameSize / 2, (8 * buttonSize) + 2 * frameSize / 2);
+
+				VLLabels[i].Size = VRLabels[i].Size = HTLabels[i].Size = HBLabels[i].Size = new Size(frameSize, frameSize);
+
+				VLLabels[i].Font = VRLabels[i].Font = HTLabels[i].Font = HBLabels[i].Font = new Font("Lucida Console", frameSize / 2, FontStyle.Regular);
 			}
 
 			for(int i = 0; i < 16; i++)
 			{
-				WKnokoutlabels[i].Size = BKnokoutlabels[i].Size = new Size(buttonSize, buttonSize);
+				WlabelsKnokout[i].Size = BlabelsKnokout[i].Size = new Size(buttonSize, buttonSize);
 
-				WKnokoutlabels[i].Location = new Point((8 * buttonSize) + frameSize * 3 + ((i % 4) * buttonSize), frameSize + (i / 4) * buttonSize);
-				BKnokoutlabels[i].Location = new Point((8 * buttonSize) + frameSize * 3 + ((i % 4) * buttonSize), (7 * buttonSize) + frameSize - (i / 4) * buttonSize);
+				WlabelsKnokout[i].Location = new Point((8 * buttonSize) + frameSize * 3 + ((i % 4) * buttonSize), frameSize + (i / 4) * buttonSize);
+				BlabelsKnokout[i].Location = new Point((8 * buttonSize) + frameSize * 3 + ((i % 4) * buttonSize), (7 * buttonSize) + frameSize - (i / 4) * buttonSize);
 
-				if (WKnokoutlabels[i].Image != null)
-					WKnokoutlabels[i].Image = new Bitmap(WKnokoutlabels[i].Image, new Size(buttonSize - 10, buttonSize - 10));
-				if (BKnokoutlabels[i].Image != null)
-					BKnokoutlabels[i].Image = new Bitmap(BKnokoutlabels[i].Image, new Size(buttonSize - 10, buttonSize - 10));
+				if (WlabelsKnokout[i].Image != null)
+					WlabelsKnokout[i].Image = new Bitmap(currentMatch.WKnockedOutChessman[i].chessSprite, new Size(buttonSize - 10, buttonSize - 10));
+				if (BlabelsKnokout[i].Image != null)
+					BlabelsKnokout[i].Image = new Bitmap(currentMatch.BKnockedOutChessman[i].chessSprite, new Size(buttonSize - 10, buttonSize - 10));
 			}
 
 			//Элементы становятся видимыми

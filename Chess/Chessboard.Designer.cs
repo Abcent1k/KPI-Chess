@@ -51,7 +51,7 @@ namespace Chess
 			this.Cursor = System.Windows.Forms.Cursors.Hand;
 			this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 			this.MaximizeBox = false;
-			this.MinimumSize = new System.Drawing.Size(630, 447);
+			this.MinimumSize = new System.Drawing.Size(598, 417);
 			this.Name = "Chessboard";
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
 			this.Text = "Chess";
