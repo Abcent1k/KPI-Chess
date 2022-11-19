@@ -572,11 +572,11 @@ namespace Chess
 			int width = Width - 18;
 
 			// если изменилась ширина с прошлого раза
-			//if (oldWidth != Width)
-			//{				
-			//	ClientSize = new Size(width , (int)(width * 1f / formSidesProportion));
-			//	height = Height - 47;
-			//}
+			if (oldWidth != Width)
+			{
+				ClientSize = new Size(width, (int)(width * 1f / formSidesProportion));
+				height = Height - 47;
+			}
 
 			// если изменилась высота с прошлого раза
 			if (oldHeight != Height)
