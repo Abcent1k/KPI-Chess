@@ -62,11 +62,10 @@ namespace Chess
 		public Label[] HTLabels = new Label[8];
 		public Label[] HBLabels = new Label[8];
 
-		private void DrawImage(PaintEventArgs e)
-		{			
-			Pen myPen = new Pen(Color.Black, 3);
-			e.Graphics.DrawRectangle(myPen, 20, 10, 100, 50);
-		}
+
+		public Chessman[] PawnChess = new Chessman[4];
+
+		public Button[] PawnButtons = new Button[4];
 
 		public Chessboard()
 		{
@@ -469,7 +468,22 @@ namespace Chess
 						if(chess[i, j] != null)
 							chess[i, j].posStepCalculated = false;
 					}
-				}				
+				}
+
+				//Превращение пешки в другую фигуру
+				if (chess[pressBttn.Location.Y / buttonSize, pressBttn.Location.X / buttonSize].type == 'P' && (pressBttn.Location.Y / buttonSize == 7 || pressBttn.Location.Y / buttonSize == 0))
+				{
+					for(int i = 0; i < 8; i++)
+					{
+						for (int j = 0; j < 8; j++)
+						{
+							buttons[i, j].Enabled = false;
+						}
+					}					
+					chess[pressBttn.Location.Y / buttonSize, pressBttn.Location.X / buttonSize].PossibleSteps(this);
+
+					FormBorderStyle = FormBorderStyle.FixedSingle;
+				}
 
 				ResetBacklightChessboard();
 				prevBttn = null;//Обнуление предыдущей кнопки
@@ -504,6 +518,46 @@ namespace Chess
 			}
 		}
 
+		//Превращение пешки 
+		public void PawnPromotion(object sender, EventArgs e)
+		{			
+			Button pressBttn = sender as Button;
+
+			int iter = 0;
+
+			for (int i = 0; i < 4; i++)
+			{
+				if (PawnButtons[i] == pressBttn)
+					iter = i;
+			}
+
+			Chessman pressChess = PawnChess[iter];
+
+			if (pressChess.color == 'w')
+			{
+				chess[0, pressBttn.Location.X / buttonSize] = pressChess;
+				buttons[0, pressBttn.Location.X / buttonSize].BackgroundImage = new Bitmap(chess[0, pressBttn.Location.X / buttonSize].chessSprite, new Size(buttonSize - 10, buttonSize - 10));
+			}
+			else
+			{
+				chess[7, pressBttn.Location.X / buttonSize] = pressChess;
+				buttons[7, pressBttn.Location.X / buttonSize].BackgroundImage = new Bitmap(chess[7, pressBttn.Location.X / buttonSize].chessSprite, new Size(buttonSize - 10, buttonSize - 10));
+			}
+
+			for (int i = 0; i < 4; i++)			
+				Controls.Remove(PawnButtons[i]);
+
+			for (int i = 0; i < 8; i++)
+			{
+				for (int j = 0; j < 8; j++)
+				{
+					buttons[i, j].Enabled = true;
+				}
+			}
+
+			FormBorderStyle = FormBorderStyle.Sizable;
+
+		}
 		//Подсветка возможных ходов
 		private void BacklightChessboard(Chessman chessman)
 		{
@@ -560,8 +614,6 @@ namespace Chess
 		{
 
 		}
-
-
 
 		private void Chessboard_ResizeEnd(object sender, EventArgs e)
 		{

@@ -1,5 +1,6 @@
 ﻿
 using Microsoft.VisualBasic;
+using System.Windows.Forms;
 
 namespace Chess
 {
@@ -22,23 +23,55 @@ namespace Chess
 			string str = sr.ReadToEnd();
 			int len = str.Length;
 
-			for (int n1 = 1; n1 <= 2; n1++)
-			{
-				int y1 = 1,//Для обычного хода
+			int y1 = 1,//Для обычного хода
 					y2 = 2,//Для битья
 					y16 = 1,//Для хода на две клеточки
 					yEnd = 7;//Для смены пешки при достижении края доски
 
+			if (color == 'w')
+			{
+				y1 *= -1;
+				y2 *= -1;
+				y16 = 6;
+				yEnd = 0;				
+			}
+			//Превращение пешки
+			if (Y == yEnd)
+			{
+				cb.PawnChess[0] = new Queen(color);
+				cb.PawnChess[1] = new Rook(color);
+				cb.PawnChess[2] = new Bishop(color);
+				cb.PawnChess[3] = new Night(color);
+
+				for (int i = 0; i < 4; i++)
+				{
+					int y;
+					if(color == 'w')
+						y = i + yEnd;
+					else
+						y = yEnd - i;
+
+					cb.PawnButtons[i] = new Button();
+
+					cb.PawnChess[i].chessSprite = new Bitmap(cb.PawnChess[i].chessSprite, new Size(cb.buttonSize - 10, cb.buttonSize - 10));
+
+					cb.PawnButtons[i].FlatAppearance.BorderSize = 0;					
+					cb.PawnButtons[i].BackgroundImage = cb.PawnChess[i].chessSprite;
+					cb.PawnButtons[i].BackgroundImageLayout = ImageLayout.Center;
+					cb.PawnButtons[i].Size = new Size(cb.buttonSize, cb.buttonSize);
+					cb.PawnButtons[i].Location = new Point(cb.frameSize + X * cb.buttonSize, cb.frameSize + y * cb.buttonSize);
+
+					cb.Controls.Add(cb.PawnButtons[i]);
+					cb.PawnButtons[i].BringToFront();
+
+					cb.PawnButtons[i].Click += new EventHandler(cb.PawnPromotion);
+				}
+			}
+
+			for (int n1 = 1; n1 <= 2; n1++)
+			{
 				try
 				{
-					if (color == 'w')
-					{
-						y1 *= -1;
-						y2 *= -1;
-						y16 = 6;
-						yEnd = 0;
-					}
-
 					if (cb.chess[Y + y1, X] == null)//Ход
 					{
 						posSteps[Y + y1, X] = 1;
@@ -50,7 +83,7 @@ namespace Chess
 						posSteps[Y + y1, X + plus_or_minus] = 2;
 
 					if(((Y == 4 && color == 'b') || (Y == 3 && color == 'w')) && 
-						((X - 1 >=0 && cb.chess[Y, X - 1]?.type == 'P') || (X + 1 <= 7 && cb.chess[Y, X + 1]?.type == 'P')))
+						((X - 1 >= 0 && cb.chess[Y, X - 1]?.type == 'P') || (X + 1 <= 7 && cb.chess[Y, X + 1]?.type == 'P')))
 					{														
 						if(((char)(X + plus_or_minus + 97) == (str[len-3])) && ((char)(X + plus_or_minus + 97) == (str[len - 6])))
 						{
