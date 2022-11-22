@@ -14,8 +14,8 @@ namespace Chess
 		public bool WCastling;//Возможность совершить рокировку белым
 		public bool BCastling;//Возможность совершить рокировку черным
 
-		public List<Chessman> WKnockedOutChessman;//Белые выбитые фигуры
-		public List<Chessman> BKnockedOutChessman;//Черные выбитые фигуры
+		public List<Chessman> WKnockoutChess;//Белые выбитые фигуры
+		public List<Chessman> BKnockoutChess;//Черные выбитые фигуры
 
 		public Match(Chessboard cb)
 		{
@@ -26,8 +26,8 @@ namespace Chess
 
 			cb.ClientSize = new Size(cb.buttonSize * 12 + cb.frameSize * 4, cb.buttonSize * 8 + cb.frameSize * 2);			
 
-			WKnockedOutChessman = new List<Chessman>();
-			BKnockedOutChessman = new List<Chessman>();
+			WKnockoutChess = new List<Chessman>();
+			BKnockoutChess = new List<Chessman>();
 
 			roundW = true;
 
