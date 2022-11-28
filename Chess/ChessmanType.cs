@@ -72,27 +72,32 @@ namespace Chess
 			{
 				try
 				{
-					if (cb.chess[Y + y1, X] == null)//Ход
+					//Ход
+					if (cb.chess[Y + y1, X] == null)
 					{
 						posSteps[Y + y1, X] = 1;
-						if (Y == y16 && cb.chess[Y + y2, X] == null)//Ход на две клеточки
+
+						//Ход на две клеточки
+						if (Y == y16 && cb.chess[Y + y2, X] == null)
 							posSteps[Y + y2, X] = 1;						
 					}
 
-					if ((cb.chess[Y + y1, X + plus_mn]?.color ?? color) != color)//Бить
+					//Бить
+					if ((cb.chess[Y + y1, X + plus_mn]?.color ?? color) != color)
 						posSteps[Y + y1, X + plus_mn] = 2;
 
+					//En passant
 					if(((Y == 4 && color == 'b') || (Y == 3 && color == 'w')) && 
 						((X - 1 >= 0 && cb.chess[Y, X - 1]?.type == 'P') || (X + 1 <= 7 && cb.chess[Y, X + 1]?.type == 'P')))
 					{														
-						if(((char)(X + plus_mn + 97) == (str[len-3])) && ((char)(X + plus_mn + 97) == (str[len - 6])))
+						if(((char)(X + plus_mn + 97) == (str[len-2])) && ((char)(X + plus_mn + 97) == (str[len - 5])))
 						{
-							if (str[len - 5] == (char)(7 + 48))
+							if (str[len - 4] == (char)(7 + 48))
 							{
 								posSteps[3, X + plus_mn] = 3;
 								posSteps[2, X + plus_mn] = 2;
 							}
-							else if (str[len - 5] == (char)(2 + 48))
+							else if (str[len - 4] == (char)(2 + 48))
 							{
 								posSteps[4, X + plus_mn] = 3;
 								posSteps[5, X + plus_mn] = 2;

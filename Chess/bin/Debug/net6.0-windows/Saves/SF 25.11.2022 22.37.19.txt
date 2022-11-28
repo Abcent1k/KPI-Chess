@@ -1,0 +1,9 @@
+1. Pc2-c4 Pd7-d5
+2. Pc4:d5 Bc8-f5
+3. Pd5-d6 Qd8:d6
+4. Nb1-c3 Bf5-c2
+5. Qd1:c2 Qd6:d2
+6. Qc2:d2 Nb8-c6
+7. Qd2-d4 Nc6-b4
+8. Qd4:b4 Pc7-c5
+9. Qb4:c5

@@ -12,7 +12,7 @@
       }
     ],
     "additionalProbingPaths": [
-      "C:\\Users\\Snaky.Macintosh\\.dotnet\\store\\|arch|\\|tfm|",
+      "C:\\Users\\snaky\\.dotnet\\store\\|arch|\\|tfm|",
       "C:\\Users\\Snaky.Macintosh\\.nuget\\packages",
       "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
     ],

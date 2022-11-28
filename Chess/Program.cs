@@ -12,9 +12,6 @@ namespace Chess
 			// see https://aka.ms/applicationconfiguration.
 			ApplicationConfiguration.Initialize();
 			Application.Run(new Chessboard());
-
-			//StreamWriter sw = new StreamWriter("save.txt");
-			
 		}
 	}
 }
