@@ -1,12 +1,9 @@
-﻿
-using System.IO;
-
-namespace Chess
+﻿namespace Chess
 {
 	public partial class Match
 	{
-		public bool roundW;//Чей ход
-		public int currentStep = 1;// Номер хода
+		public bool witeTurn;//Чей ход	
+		public int currentStep = 1;//Номер хода
 
 		public string savesPath = "Saves";//Путь к папке с сохранениями
 		public string safeFile = ("SF " + (DateTime.Now).ToString().Replace(":", "."));//Файл сохранения	
@@ -24,12 +21,12 @@ namespace Chess
 			FileStream fs = new FileStream($"{savesPath}\\{safeFile}.txt", FileMode.Create);
 			fs.Close();
 
-			cb.ClientSize = new Size(cb.buttonSize * 8 + cb.labelSize * 4 + cb.frameSize * 4, cb.buttonSize * 8 + cb.frameSize * 2);			
+			cb.ClientSize = new Size(cb.cellSize * 8 + cb.labelSize * 4 + cb.frameSize * 4, cb.cellSize * 8 + cb.frameSize * 2);			
 
 			WKnockoutChess = new List<Chessman>();
 			BKnockoutChess = new List<Chessman>();
 
-			roundW = true;
+			witeTurn = true;
 
 			WCastling = true;
 			BCastling= true;

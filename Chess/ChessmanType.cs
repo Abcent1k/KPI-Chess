@@ -1,8 +1,4 @@
-﻿
-using Microsoft.VisualBasic;
-using System.Windows.Forms;
-
-namespace Chess
+﻿namespace Chess
 {
 	internal class Pawn : Chessman
 	{
@@ -45,26 +41,21 @@ namespace Chess
 
 				for (int i = 0; i < 4; i++)
 				{
-					int y;
+					int y = color == 'w' ? i + yEnd : yEnd - i;
 
-					if(color == 'w')
-						y = i + yEnd;
-					else
-						y = yEnd - i;
+					cb.PromotionChess[i].chessSprite = new Bitmap(cb.PromotionChess[i].chessSprite, new Size(cb.cellSize - 10, cb.cellSize - 10));
 
-					cb.PromotionChess[i].chessSprite = new Bitmap(cb.PromotionChess[i].chessSprite, new Size(cb.buttonSize - 10, cb.buttonSize - 10));
+					cb.PromotionCells[i] = new Button();
+					cb.PromotionCells[i].FlatAppearance.BorderSize = 0;					
+					cb.PromotionCells[i].BackgroundImage = cb.PromotionChess[i].chessSprite;
+					cb.PromotionCells[i].BackgroundImageLayout = ImageLayout.Center;
+					cb.PromotionCells[i].Size = new Size(cb.cellSize, cb.cellSize);
+					cb.PromotionCells[i].Location = new Point(cb.frameSize + X * cb.cellSize, cb.frameSize + y * cb.cellSize);
 
-					cb.PromotionButtons[i] = new Button();
-					cb.PromotionButtons[i].FlatAppearance.BorderSize = 0;					
-					cb.PromotionButtons[i].BackgroundImage = cb.PromotionChess[i].chessSprite;
-					cb.PromotionButtons[i].BackgroundImageLayout = ImageLayout.Center;
-					cb.PromotionButtons[i].Size = new Size(cb.buttonSize, cb.buttonSize);
-					cb.PromotionButtons[i].Location = new Point(cb.frameSize + X * cb.buttonSize, cb.frameSize + y * cb.buttonSize);
+					cb.Controls.Add(cb.PromotionCells[i]);
+					cb.PromotionCells[i].BringToFront();
 
-					cb.Controls.Add(cb.PromotionButtons[i]);
-					cb.PromotionButtons[i].BringToFront();
-
-					cb.PromotionButtons[i].Click += new EventHandler(cb.PawnPromotion);
+					cb.PromotionCells[i].Click += new EventHandler(cb.PawnPromotion);
 				}
 			}
 

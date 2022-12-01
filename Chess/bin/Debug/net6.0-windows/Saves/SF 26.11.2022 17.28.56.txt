@@ -1,5 +1,0 @@
-1. Pd2-d4 Pe7-e5
-2. Pd4:e5 Pd7-d5
-3. Pe5/d6 Qd8-f6
-4. Pd6:c7 Bc8-e6
-5. Pc7-c8=Q

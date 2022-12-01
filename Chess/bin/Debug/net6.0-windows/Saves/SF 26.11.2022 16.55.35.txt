@@ -1,5 +1,0 @@
-1. Pd2-d4 Pe7-e5
-2. Pd4:e5 Pf7-f5
-3. Pe5/f6 Qd8:f6
-4. Qd1-d4 Qf6-e5
-5. Qd4:e5

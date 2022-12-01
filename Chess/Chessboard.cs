@@ -1,13 +1,8 @@
-using Microsoft.VisualBasic;
-using System;
-using System.Drawing;
-using System.Windows.Forms;
-
 namespace Chess
 {
 	public partial class Chessboard : Form
 	{
-		public int buttonSize = 90;//Размер клетки (кнопки)	
+		public int cellSize = 90;//Размер клетки (кнопки)	
 		public int frameSize = 25;
 		public int labelSize = 60;
 
@@ -44,19 +39,18 @@ namespace Chess
 
 		public Color[,] colorMap = new Color[8, 8];//Карта цветов шахматной доски
 
-		public Button? prevBttn;
+		public Button? prevCell;
 
-		public Button[,] buttons = new Button[8, 8];//Массив с кнопками
+		public Button[,] cells = new Button[8, 8];//Массив с кнопками
 
 		public Chessman[,] chess = new Chessman[8, 8];//Массив с фигурами
 
-
-		public Label[] WlabelsKnockout = new Label[16];
-		public Label[] BlabelsKnockout = new Label[16];
+		public Label[] WLabelsKnockout = new Label[16];
+		public Label[] BLabelsKnockout = new Label[16];
 
 		public Label labelFrame;
 
-		public Label turnLabel;
+		public Label LabelTurn;
 
 		public Label[] VLLabels = new Label[8];
 		public Label[] VRLabels = new Label[8];
@@ -65,7 +59,9 @@ namespace Chess
 
 
 		public Chessman[] PromotionChess = new Chessman[4];
-		public Button[] PromotionButtons = new Button[4];
+		public Button[] PromotionCells = new Button[4];
+
+		public bool posStepsCalculated = false;//Посчитаны ли ходы фигур
 
 		public Chessboard()
 		{
@@ -77,7 +73,12 @@ namespace Chess
 			CreateChessboard();
 		}
 
-		public void CreateColorMap(Color light, Color dark)//Создание карты цветов шахматной доски
+		/// <summary>
+		/// Создание карты цветов шахматной доски
+		/// </summary>
+		/// <param name="light">Светлая клетка</param>
+		/// <param name="dark">Темная клетка</param>
+		public void CreateColorMap(Color light, Color dark)
 		{
 			for (int i = 0; i < 8; i++)
 			{
@@ -91,52 +92,62 @@ namespace Chess
 			}
 		}
 
-		public void ShowChessboard()//Перерисовка шахматной доски
+		/// <summary>
+		/// Перерисовка шахматной доски
+		/// </summary>
+		public void ShowChessboard()
 		{
 			for (int i = 0; i < 8; i++)
 			{
 				for (int j = 0; j < 8; j++)
 				{
 					if (chess[i, j] != null)
-						buttons[i, j].BackgroundImage = new Bitmap(chess[i, j].chessSprite, new Size(buttonSize - 10, buttonSize - 10));
+						cells[i, j].BackgroundImage = new Bitmap(chess[i, j].chessSprite, new Size(cellSize - 10, cellSize - 10));
 					else
-						buttons[i, j].BackgroundImage = null;
+						cells[i, j].BackgroundImage = null;
 
-					buttons[i, j].BackgroundImageLayout = ImageLayout.Center;
+					cells[i, j].BackgroundImageLayout = ImageLayout.Center;
 				}
 			}
 		}
 
+		/// <summary>
+		/// Скрыть или показать элементы формы		
+		/// </summary>
+		/// <param name="showElement">Скрыть или показать</param>
 		//Нужен для красивой отрисовки UI при изменении размеров окна
 		private void RedrawingUI(bool showElement)
 		{
-			turnLabel.Visible = showElement;
+			LabelTurn.Visible = showElement;
 			for (int i = 0; i < 8; i++)
 			{
 				for (int j = 0; j < 8; j++)
 				{
-					buttons[i, j].Visible = showElement;
+					cells[i, j].Visible = showElement;
 
 					if ((i * 8 + j) < 16)
 					{
-						WlabelsKnockout[i * 8 + j].Visible = showElement;
-						BlabelsKnockout[i * 8 + j].Visible = showElement;
+						WLabelsKnockout[i * 8 + j].Visible = showElement;
+						BLabelsKnockout[i * 8 + j].Visible = showElement;
 					}
 				}
 				VLLabels[i].Visible = VRLabels[i].Visible = HTLabels[i].Visible = HBLabels[i].Visible = showElement;
 			}
 		}
 
-		public void CreateChessboard()//Создание шахманой доски
+		/// <summary>
+		/// Создать шахманую доску
+		/// </summary>
+		public void CreateChessboard()
 		{
-			dot = new Bitmap(new Bitmap($"Sprites\\dot.png"), new Size(buttonSize, buttonSize));
-			circle = new Bitmap(new Bitmap($"Sprites\\circle.png"), new Size(buttonSize - 1, buttonSize - 1));
+			dot = new Bitmap(new Bitmap($"Sprites\\dot.png"), new Size(cellSize, cellSize));
+			circle = new Bitmap(new Bitmap($"Sprites\\circle.png"), new Size(cellSize - 1, cellSize - 1));
 			cross = new Bitmap($"Sprites\\cross.png");
-			arrowLeft = new Bitmap(new Bitmap($"Sprites\\arrowLeft.png"), new Size(buttonSize - 1, buttonSize - 1));
-			arrowRight = new Bitmap(new Bitmap($"Sprites\\arrowRight.png"), new Size(buttonSize - 1, buttonSize - 1));
+			arrowLeft = new Bitmap(new Bitmap($"Sprites\\arrowLeft.png"), new Size(cellSize - 1, cellSize - 1));
+			arrowRight = new Bitmap(new Bitmap($"Sprites\\arrowRight.png"), new Size(cellSize - 1, cellSize - 1));
 
-			frameSize = (int)(buttonSize / 3.6);
-			labelSize = (int)(buttonSize / 1.5);
+			frameSize = (int)(cellSize / 3.6);
+			labelSize = (int)(cellSize / 1.5);
 
 			formSidesProportion = (float)(Width - 18) / (float)(Height - 47);
 
@@ -146,20 +157,20 @@ namespace Chess
 			{
 				for (int j = 0; j < 8; j++)
 				{
-					buttons[i, j] = new Button();//Массив кнопок
+					cells[i, j] = new Button();//Массив кнопок
 
 					Button button = new Button();
-					button.Size = new Size(buttonSize, buttonSize);//Задаем размер кнопки
+					button.Size = new Size(cellSize, cellSize);//Задаем размер кнопки
 					button.FlatAppearance.BorderSize = 0;//Убeраем рамку у кнопок
 					button.FlatStyle = FlatStyle.Flat;//Делаем кнопку плоской, без скгруления
-					button.Location = new Point(frameSize + j * buttonSize, frameSize + i * buttonSize);//Расставляем кнопки
+					button.Location = new Point(frameSize + j * cellSize, frameSize + i * cellSize);//Расставляем кнопки
 					button.BackColor = colorMap[i, j];
 					button.FlatAppearance.MouseDownBackColor = colorMap[i, j];//Нужно, чтобы не менялся цвет клетки в момент зажатия кнопки (по дефолту цвет был голубым, некрасиво)
 
 					button.Click += new EventHandler(OnFigurePress);//Добавляем ивент
 
 					Controls.Add(button);
-					buttons[i, j] = button;
+					cells[i, j] = button;
 
 					if (defaultMap[i, j].Length != 0)//Расстановка фигур исходя из карты, отрисовка картинок фигур на кнопках
 					{
@@ -185,7 +196,7 @@ namespace Chess
 								break;
 						}
 						if (chess[i, j] != null)
-							chess[i, j].chessSprite = new Bitmap(chess[i, j].chessSprite, new Size(buttonSize - 10, buttonSize - 10));
+							chess[i, j].chessSprite = new Bitmap(chess[i, j].chessSprite, new Size(cellSize - 10, cellSize - 10));
 
 						button.BackgroundImage = chess[i, j].chessSprite;
 						button.BackgroundImageLayout = ImageLayout.Center;
@@ -209,11 +220,11 @@ namespace Chess
 				labelVL.Text = labelVR.Text = (8 - i).ToString();
 				labelHT.Text = labelHB.Text = ((char)(97 + i)).ToString();
 
-				labelVL.Location = new Point(0, (i * buttonSize) + buttonSize / 2 + frameSize);
-				labelVR.Location = new Point((8 * buttonSize) + frameSize, (i * buttonSize) + buttonSize / 2 + frameSize / 2);
+				labelVL.Location = new Point(0, (i * cellSize) + cellSize / 2 + frameSize);
+				labelVR.Location = new Point((8 * cellSize) + frameSize, (i * cellSize) + cellSize / 2 + frameSize / 2);
 
-				labelHT.Location = new Point((i * buttonSize) + buttonSize / 2 + frameSize / 2, 0);
-				labelHB.Location = new Point((i * buttonSize) + buttonSize / 2 + frameSize / 2, (8 * buttonSize) + 2 * frameSize / 2);
+				labelHT.Location = new Point((i * cellSize) + cellSize / 2 + frameSize / 2, 0);
+				labelHB.Location = new Point((i * cellSize) + cellSize / 2 + frameSize / 2, (8 * cellSize) + 2 * frameSize / 2);
 
 				labelVL.Font = labelVR.Font = labelHT.Font = labelHB.Font = new Font("Lucida Console", frameSize / 2, FontStyle.Regular);
 
@@ -236,7 +247,7 @@ namespace Chess
 
 			labelFrame.Location = new Point(0, 0);
 
-			labelFrame.Size = new Size(buttonSize * 8 + frameSize * 2, buttonSize * 8 + frameSize * 2);
+			labelFrame.Size = new Size(cellSize * 8 + frameSize * 2, cellSize * 8 + frameSize * 2);
 
 			labelFrame.BackColor = frame;
 
@@ -248,8 +259,8 @@ namespace Chess
 				Label labelKnokoutW = new Label();
 				Label labelKnokoutB = new Label();
 
-				labelKnokoutW.Location = new Point((8 * buttonSize) + frameSize * 3 + ((i % 4) * labelSize), frameSize + (i / 4) * labelSize);
-				labelKnokoutB.Location = new Point((8 * buttonSize) + frameSize * 3 + ((i % 4) * labelSize), (7 * labelSize) + frameSize - (i / 4) * labelSize);
+				labelKnokoutW.Location = new Point((8 * cellSize) + frameSize * 3 + ((i % 4) * labelSize), frameSize + (i / 4) * labelSize);
+				labelKnokoutB.Location = new Point((8 * cellSize) + frameSize * 3 + ((i % 4) * labelSize), (7 * labelSize) + frameSize - (i / 4) * labelSize);
 
 				labelKnokoutB.Size = labelKnokoutW.Size = new Size(labelSize, labelSize);
 
@@ -259,65 +270,69 @@ namespace Chess
 				Controls.Add(labelKnokoutW);
 				Controls.Add(labelKnokoutB);
 
-				WlabelsKnockout[i] = labelKnokoutW;
-				BlabelsKnockout[i] = labelKnokoutB;
+				WLabelsKnockout[i] = labelKnokoutW;
+				BLabelsKnockout[i] = labelKnokoutB;
 			}
 
-			turnLabel = new Label();
+			LabelTurn = new Label();
 
-			turnLabel.Location = new Point((8 * buttonSize + frameSize * 3), labelSize * 8 + frameSize * 2);
+			LabelTurn.Location = new Point((8 * cellSize + frameSize * 3), labelSize * 8 + frameSize * 2);
 
-			turnLabel.Size = new Size(labelSize * 4, frameSize * 2);
+			LabelTurn.Size = new Size(labelSize * 4, frameSize * 2);
 
-			turnLabel.BackColor = Color.White;
-			turnLabel.Text = "White";
-			turnLabel.Font = new Font("Lucida Console", frameSize, FontStyle.Regular);
-			turnLabel.TextAlign = ContentAlignment.MiddleCenter;
+			LabelTurn.BackColor = Color.White;
+			LabelTurn.Text = "White";
+			LabelTurn.Font = new Font("Lucida Console", frameSize, FontStyle.Regular);
+			LabelTurn.TextAlign = ContentAlignment.MiddleCenter;
 
-			Controls.Add(turnLabel);
+			Controls.Add(LabelTurn);
 		}
 
-		private void OnFigurePress(object sender, EventArgs e)//Ивент нажатия на фигуру
+		/// <summary>
+		/// Ивент нажатия на фигуру
+		/// </summary>
+		/// <param name="sender">Кнопка</param>
+		/// <param name="e"></param>
+		private void OnFigurePress(object sender, EventArgs e)
 		{
-			Button pressBttn = sender as Button;
+			Button pressCell = sender as Button;
 
-			int Y = (pressBttn.Location.Y - frameSize) / buttonSize;
-			int X = (pressBttn.Location.X - frameSize) / buttonSize;
+			int Y = (pressCell.Location.Y - frameSize) / cellSize;
+			int X = (pressCell.Location.X - frameSize) / cellSize;
 
-			int prevY = (prevBttn?.Location.Y ?? frameSize - frameSize) / buttonSize;
-			int prevX = (prevBttn?.Location.X ?? frameSize - frameSize) / buttonSize;
+			int prevY = (prevCell?.Location.Y ?? frameSize - frameSize) / cellSize;
+			int prevX = (prevCell?.Location.X ?? frameSize - frameSize) / cellSize;
 
 			Chessman pressChess = chess[Y, X];
 
 			//Нажатие на подсвечиваемую фигуру
-			if (pressBttn.BackColor == lightPushedCell || pressBttn.BackColor == darkPushedCell)
+			if (pressCell.BackColor == lightPushedCell || pressCell.BackColor == darkPushedCell)
 			{
 				ResetBacklightChessboard();
-				prevBttn = null;
+				prevCell = null;
 				return;
 			}
 
 			//Сделать возможный ход, который подсвечивается 
-			else if (pressBttn.Image != null)
+			else if (pressCell.Image != null)
 			{
 				//Механика сохранения
 				StreamWriter sw = new StreamWriter(new FileStream($"Saves\\{currentMatch.safeFile}.txt", FileMode.Append));
 				//
-				if (currentMatch.roundW == true)
+				if (currentMatch.witeTurn == true)
 				{
 					if (currentMatch.currentStep != 1)
 						sw.Write('\n');
 					sw.Write($"{currentMatch.currentStep}.");
 				}
-
 				//
 
 				//Не реагировать на нажатие крестика
-				if (pressBttn.Image == cross)
+				if (pressCell.Image == cross)
 					return;
 
 				//Рокировка
-				if (pressBttn.Image == arrowLeft || pressBttn.Image == arrowRight)
+				if (pressCell.Image == arrowLeft || pressCell.Image == arrowRight)
 				{
 					//Обнуление возможности рокировки
 					if (chess[Y, X].color == 'b')
@@ -330,137 +345,90 @@ namespace Chess
 					sw.Write("0-0");
 					//
 
-					if (pressBttn.Image == arrowLeft)
+					//Короткая 0-0
+					if ((pressCell.Image == arrowLeft && chess[Y, X].type == 'R') || (pressCell.Image == arrowRight && chess[Y, X].type == 'K'))
 					{
-						//Короткая 0-0
-						if (chess[Y, X].type == 'R')
-						{
-							chess[Y, 5] = chess[Y, X];
-							chess[Y, X] = null;
-
-							chess[Y, 6] = chess[Y, 4];
-							chess[Y, 4] = null;
-						}
-						//Длинная 0-0-0
-						else if (chess[Y, X].type == 'K')
-						{
-							chess[Y, 2] = chess[Y, X];
-							chess[Y, X] = null;
-
-							chess[Y, 3] = chess[Y, 0];
-							chess[Y, 0] = null;
-
-							//
-							sw.Write("-0");
-							//
-						}
+						FiguresPermutation(cells[Y, 7], cells[Y, 5]);
+						FiguresPermutation(cells[Y, 4], cells[Y, 6]);
 					}
+					//Длинная 0-0-0
 					else
 					{
-						//Длинная 0-0-0
-						if (chess[Y, X].type == 'R')
-						{
-							chess[Y, 3] = chess[Y, X];
-							chess[Y, X] = null;
-
-							chess[Y, 2] = chess[Y, 4];
-							chess[Y, 4] = null;
-
-							//
-							sw.Write("-0");
-							//
-						}
-						//Короткая 0-0
-						else if (chess[Y, X].type == 'K')
-						{
-							chess[Y, 6] = chess[Y, X];
-							chess[Y, X] = null;
-
-							chess[Y, 5] = chess[Y, 7];
-							chess[Y, 7] = null;
-						}
-					}
+						FiguresPermutation(cells[Y, 0], cells[Y, 3]);
+						FiguresPermutation(cells[Y, 4], cells[Y, 2]);
+						//
+						sw.Write("-0");
+						//
+					}					
 
 					//					
 					sw.Close();
 					//
 				}
-
-				// En passant
-				else if (pressBttn.Image == circle && ((Y - 1 >= 0 && (buttons[Y - 1, X].Image == cross)) || (Y + 1 <= 7 && buttons[Y + 1, X].Image == cross)))
+				//En passant
+				else if (pressCell.Image == circle && ((Y - 1 >= 0 && (cells[Y - 1, X].Image == cross)) || (Y + 1 <= 7 && cells[Y + 1, X].Image == cross)))
 				{
+					//
+					sw.Write(" ");
+					sw.Write($"{chess[prevY, prevX].type}{(char)(97 + prevX)}{8 - prevY}");
+					sw.Write($"/{(char)(97 + X)}{8 - Y}");
+					sw.Close();
+					//
+
 					try
 					{
-						//
-						sw.Write(" ");
-						sw.Write($"{chess[prevY, prevX].type}{(char)(97 + prevX)}{8 - prevY}");
-						sw.Write("/" + ((char)(97 + X)).ToString() + (8 - Y).ToString());
-
-						sw.Close();
-						//
-
+						List<Chessman> KnockoutChess = currentMatch.WKnockoutChess;
+						Label[] labelsKnockout = WLabelsKnockout;
 						int plus_mn = -1;
-						var KnockoutChess = currentMatch.WKnockoutChess;
-						var labelsKnockout = WlabelsKnockout;
 
-						if (chess[prevY, prevX].color == 'w')
+						if (chess[prevY, prevX]?.color == 'w')
 						{
-							plus_mn = 1;
 							KnockoutChess = currentMatch.BKnockoutChess;
-							labelsKnockout = BlabelsKnockout;
+							labelsKnockout = BLabelsKnockout;
+							plus_mn = 1;
 						}
 
-						KnockoutChess.Add(chess[Y + plus_mn, X]);
-						int iter = KnockoutChess.Count() - 1;
-						labelsKnockout[iter].Image = new Bitmap(KnockoutChess[iter].chessSprite, new Size(labelSize, labelSize));
-						chess[Y + plus_mn, X] = null;
+						if (cells[Y + plus_mn, X].Image == cross)
+						{
+							KnockoutChess.Add(chess[Y + plus_mn, X]);
+							chess[Y + plus_mn, X] = null;
+							int iter = KnockoutChess.Count() - 1;
+							labelsKnockout[iter].Image = new Bitmap(KnockoutChess[iter].chessSprite, new Size(labelSize, labelSize));
+						}
 
-						//Перестановка фигур
-						chess[Y, X] = chess[prevY, prevX];
-						chess[prevY, prevX] = null;
-
+						FiguresPermutation(prevCell, pressCell);
 					}
-					catch (IndexOutOfRangeException) { }
+					catch (IndexOutOfRangeException)
+					{
+					}
 				}
-
-				//Реализация бить или ходить
+				//Бить или ходить
 				else
 				{
 					//
 					sw.Write(" ");
 					sw.Write($"{chess[prevY, prevX].type}{(char)(97 + prevX)}{8 - prevY}");
-					//
-
-					if (pressBttn.Image == circle)
-					{
-						List<Chessman> KnockoutChess = currentMatch.WKnockoutChess;
-						Label[] labelsKnockout = WlabelsKnockout;
-
-						if (chess[Y, X]?.color == 'b')
-						{
-							KnockoutChess = currentMatch.BKnockoutChess;
-							labelsKnockout = BlabelsKnockout;
-						}
-
-						KnockoutChess.Add(chess[Y, X]);
-						int iter = KnockoutChess.Count() - 1;
-						labelsKnockout[iter].Image = new Bitmap(KnockoutChess[iter].chessSprite, new Size(labelSize, labelSize));
-
-						//
-						sw.Write(":");
-						//
-					}
-					//
-					else
-						sw.Write("-");
-
-					sw.Write($"{(char)(97 + X)}{8 - Y}");
+					sw.Write($"{(pressCell.Image == circle ? ':' : '-')}{(char)(97 + X)}{8 - Y}");
 					sw.Close();
 					//
 
-					//Перестановка фигур
-					chess[Y, X] = chess[prevY, prevX];
-					chess[prevY, prevX] = null;
+					List<Chessman> KnockoutChess = currentMatch.WKnockoutChess;
+					Label[] labelsKnockout = WLabelsKnockout;
+
+					if (chess[prevY, prevX]?.color == 'w')
+					{
+						KnockoutChess = currentMatch.BKnockoutChess;
+						labelsKnockout = BLabelsKnockout;
+					}
+
+					if (chess[Y, X] != null)
+					{
+						KnockoutChess.Add(chess[Y, X]);
+						int iter = KnockoutChess.Count() - 1;
+						labelsKnockout[iter].Image = new Bitmap(KnockoutChess[iter].chessSprite, new Size(labelSize, labelSize));
+					}
+
+					FiguresPermutation(prevCell, pressCell);					
 				}
 
 				//Превращение пешки в другую фигуру
@@ -472,22 +440,22 @@ namespace Chess
 				}
 
 				//Смена хода + счет хода + подсветка чей ход
-				if (currentMatch.roundW == true)
+				if (currentMatch.witeTurn == true)
 				{
 					currentMatch.currentStep++;
 
-					turnLabel.BackColor = Color.Black;
-					turnLabel.Text = "Black";					
-					turnLabel.ForeColor = Color.White;					
+					LabelTurn.BackColor = Color.Black;
+					LabelTurn.Text = "Black";
+					LabelTurn.ForeColor = Color.White;
 				}
 				else
-				{					
-					turnLabel.BackColor = Color.White;
-					turnLabel.Text = "White";					
-					turnLabel.ForeColor = Color.Black;				
+				{
+					LabelTurn.BackColor = Color.White;
+					LabelTurn.Text = "White";
+					LabelTurn.ForeColor = Color.Black;
 				}
 
-				currentMatch.roundW = !currentMatch.roundW;
+				currentMatch.witeTurn = !currentMatch.witeTurn;
 
 				//Обнуление возможности рокировки
 				if (chess[Y, X] != null && (chess[Y, X].type == 'K' || chess[Y, X].type == 'R'))
@@ -499,14 +467,10 @@ namespace Chess
 				}
 
 				//Обнуление маркеров
-				foreach (Chessman chessman in chess)
-				{
-					if (chessman != null)
-						chessman.posStepCalculated = false;
-				}
+				posStepsCalculated = false;
 
 				ResetBacklightChessboard();
-				prevBttn = null;//Обнуление предыдущей кнопки
+				prevCell = null;//Обнуление предыдущей кнопки
 				ShowChessboard();
 				return;
 			}
@@ -514,68 +478,81 @@ namespace Chess
 			//Нажимаем на клетку без подсветки
 			else
 			{
-				prevBttn = pressBttn;
+				prevCell = pressCell;
 				ResetBacklightChessboard();
 
 				if (pressChess != null)
 				{
-					if ((currentMatch.roundW && pressChess.color == 'b') || (!currentMatch.roundW && pressChess.color == 'w'))//Проверка на то, чей ход
+					//Проверка на то, чей ход
+					if ((currentMatch.witeTurn && pressChess.color == 'b') || (!currentMatch.witeTurn && pressChess.color == 'w'))
 						return;
 
-					if (pressChess.posStepCalculated == false)//Расчет возможных ходов выбраной фигуры
+					//Посчитать возможные ходы
+					if (posStepsCalculated == false)
 					{
-						pressChess.PossibleSteps(this);
-						pressChess.posStepCalculated = true;//Установка маркера
+						foreach (var chessman in chess)
+						{
+							if (chessman != null)
+								chessman.PossibleSteps(this);
+							posStepsCalculated = true;
+						}
 					}
 
-					if (pressBttn.BackColor == lightCell)//Подсветка выбраной фигуры
-						pressBttn.BackColor = lightPushedCell;
+					//Подсветка выбраной фигуры
+					if (pressCell.BackColor == lightCell)
+						pressCell.BackColor = lightPushedCell;
 					else
-						pressBttn.BackColor = darkPushedCell;
+						pressCell.BackColor = darkPushedCell;
 
 					BacklightChessboard(pressChess);
 
-					prevBttn = pressBttn;
+					prevCell = pressCell;
 				}
-
 			}
-									
 		}
 
-		//Отображение меню превращение пешки 
+		public void FiguresPermutation(Button cellFrom, Button cellTo)
+		{
+			int Y = (cellTo.Location.Y - frameSize) / cellSize;
+			int X = (cellTo.Location.X - frameSize) / cellSize;
+
+			int prevY = (cellFrom.Location.Y - frameSize) / cellSize;
+			int prevX = (cellFrom.Location.X - frameSize) / cellSize;
+
+			chess[Y, X] = chess[prevY, prevX];
+			chess[prevY, prevX] = null;
+		}
+
+		/// <summary>
+		/// Взаимодействие с меню превращение пешки
+		/// </summary>
+		/// <param name="sender">кнопка</param>
+		/// <param name="e"></param>
 		public void PawnPromotion(object sender, EventArgs e)
 		{
 			Button pressBttn = sender as Button;
 
-			int X = (pressBttn.Location.X - frameSize) / buttonSize;
+			int X = (pressBttn.Location.X - frameSize) / cellSize;
 
+			Chessman pressChess = PromotionChess[0];
 
-			int iter = 0;
 			for (int i = 0; i < 4; i++)
 			{
-				if (PromotionButtons[i] == pressBttn)
-					iter = i;
+				if (PromotionCells[i] == pressBttn)
+					pressChess = PromotionChess[i];
 			}
-			Chessman pressChess = PromotionChess[iter];
 
-
-			int y;
-			if (pressChess.color == 'w')
-				y = 0;
-			else
-				y = 7;
-
+			int y = pressChess.color == 'w' ? 0 : 7;
 
 			chess[y, X] = pressChess;
-			buttons[y, X].BackgroundImage = new Bitmap(chess[y, X].chessSprite, new Size(buttonSize - 10, buttonSize - 10));
+			cells[y, X].BackgroundImage = new Bitmap(chess[y, X].chessSprite, new Size(cellSize - 10, cellSize - 10));
 
-
-			foreach (Button button in PromotionButtons)
+			foreach (Button button in PromotionCells)
 			{
 				Controls.Remove(button);
 			}
 
-			//Механика сохранения
+			//
 			StreamWriter sw = new StreamWriter(new FileStream($"Saves\\{currentMatch.safeFile}.txt", FileMode.Append));
 			sw.Write($"={pressChess.type}");
 			sw.Close();
@@ -584,10 +561,13 @@ namespace Chess
 			BlockChessboard(false);
 		}
 
-		//Заблокировать возможность взаимодействовать с шахматной доской
+		/// <summary>
+		/// Заблокировать возможность взаимодействовать с шахматной доской
+		/// </summary>
+		/// <param name="block">заблокировать</param>
 		private void BlockChessboard(bool block)
 		{
-			foreach (Button button in buttons)
+			foreach (Button button in cells)
 			{
 				button.Enabled = !block;
 			}
@@ -598,7 +578,10 @@ namespace Chess
 				FormBorderStyle = FormBorderStyle.Sizable;
 		}
 
-		//Подсветка возможных ходов
+		/// <summary>
+		/// Подсветка возможных ходов
+		/// </summary>
+		/// <param name="chessman">шахматная фигура на доске</param>
 		private void BacklightChessboard(Chessman chessman)
 		{
 			for (int i = 0; i < 8; i++)
@@ -608,38 +591,40 @@ namespace Chess
 					switch (chessman?.posSteps[i, j])
 					{
 						case 1:
-							buttons[i, j].Image = dot;
+							cells[i, j].Image = dot;
 							break;
 						case 2:
-							buttons[i, j].Image = circle;
+							cells[i, j].Image = circle;
 							break;
 						case 3:
-							buttons[i, j].Image = cross;
+							cells[i, j].Image = cross;
 							break;
 						case 4:
-							buttons[i, j].Image = arrowLeft;
+							cells[i, j].Image = arrowLeft;
 							break;
 						case 5:
-							buttons[i, j].Image = arrowRight;
+							cells[i, j].Image = arrowRight;
 							break;
 					}
 
-					buttons[i, j].ImageAlign = ContentAlignment.MiddleCenter;
+					cells[i, j].ImageAlign = ContentAlignment.MiddleCenter;
 				}
 			}
 		}
 
-		//Сброс подсветок на шахматной доске
+		/// <summary>
+		/// Сброс подсветок на шахматной доске
+		/// </summary>
 		private void ResetBacklightChessboard()
 		{
-			if (prevBttn != null)
+			if (prevCell != null)
 			{
 				for (int i = 0; i < 8; i++)
 				{
 					for (int j = 0; j < 8; j++)
 					{
-						buttons[i, j].BackColor = colorMap[i, j];
-						buttons[i, j].Image = null;
+						cells[i, j].BackColor = colorMap[i, j];
+						cells[i, j].Image = null;
 					}
 				}
 			}
@@ -666,7 +651,7 @@ namespace Chess
 
 		private void Chessboard_ResizeEnd(object sender, EventArgs e)
 		{
-			if (buttons[0, 0] == null || (oldHeight == Height && oldWidth == Width))
+			if (cells[0, 0] == null || (oldHeight == Height && oldWidth == Width))
 				return;
 
 			int height = Height - 47;
@@ -686,47 +671,47 @@ namespace Chess
 				width = Width - 18;
 			}
 
-			buttonSize = (int)(3.6 / 30.8 * height);//Размер стороны кнопки при изменении размера окна
+			cellSize = (int)Math.Round(3.6 / 30.8 * height);//Размер стороны кнопки при изменении размера окна
 
-			labelSize = (int)(buttonSize / 1.5);
-			frameSize = (int)(buttonSize / 3.6);
+			labelSize = (int)Math.Round(cellSize / 1.5);
+			frameSize = (int)Math.Round(cellSize / 3.6);
 
-			ClientSize = new Size(buttonSize * 8 + labelSize * 4 + frameSize * 4, buttonSize * 8 + frameSize * 2);//Окончательно меняем размер окна					
+			ClientSize = new Size(cellSize * 8 + labelSize * 4 + frameSize * 4, cellSize * 8 + frameSize * 2);//Окончательно меняем размер окна					
 
-			labelFrame.Size = new Size(buttonSize * 8 + frameSize * 2, buttonSize * 8 + frameSize * 2);//Размер рамки
+			labelFrame.Size = new Size(cellSize * 8 + frameSize * 2, cellSize * 8 + frameSize * 2);//Размер рамки
 
-			dot = new Bitmap(new Bitmap($"Sprites\\dot.png"), new Size(buttonSize - 1, buttonSize - 1));
-			circle = new Bitmap(new Bitmap($"Sprites\\circle.png"), new Size(buttonSize - 1, buttonSize - 1));
-			cross = new Bitmap(new Bitmap($"Sprites\\cross.png"), new Size(buttonSize - 1, buttonSize - 1));
-			arrowLeft = new Bitmap(new Bitmap($"Sprites\\arrowLeft.png"), new Size(buttonSize - 1, buttonSize - 1));
-			arrowRight = new Bitmap(new Bitmap($"Sprites\\arrowRight.png"), new Size(buttonSize - 1, buttonSize - 1));
+			dot = new Bitmap(new Bitmap($"Sprites\\dot.png"), new Size(cellSize - 1, cellSize - 1));
+			circle = new Bitmap(new Bitmap($"Sprites\\circle.png"), new Size(cellSize - 1, cellSize - 1));
+			cross = new Bitmap(new Bitmap($"Sprites\\cross.png"), new Size(cellSize - 1, cellSize - 1));
+			arrowLeft = new Bitmap(new Bitmap($"Sprites\\arrowLeft.png"), new Size(cellSize - 1, cellSize - 1));
+			arrowRight = new Bitmap(new Bitmap($"Sprites\\arrowRight.png"), new Size(cellSize - 1, cellSize - 1));
 
 			//Элементы становятся невидимыми
 			RedrawingUI(false);
 
-			turnLabel.Location = new Point((8 * buttonSize + frameSize * 3), labelSize * 8 + frameSize * 2);
-			turnLabel.Size = new Size(labelSize * 4, frameSize * 2);
-			turnLabel.Font = new Font("Lucida Console", frameSize, FontStyle.Regular);
+			LabelTurn.Location = new Point((8 * cellSize + frameSize * 3), labelSize * 8 + frameSize * 2);
+			LabelTurn.Size = new Size(labelSize * 4, frameSize * 2);
+			LabelTurn.Font = new Font("Lucida Console", frameSize, FontStyle.Regular);
 
 			for (int i = 0; i < 8; i++)
 			{
 				for (int j = 0; j < 8; j++)
 				{
-					buttons[i, j].Location = new Point(frameSize + j * buttonSize, frameSize + i * buttonSize);
-					buttons[i, j].Size = new Size(buttonSize, buttonSize);
+					cells[i, j].Location = new Point(frameSize + j * cellSize, frameSize + i * cellSize);
+					cells[i, j].Size = new Size(cellSize, cellSize);
 
-					if (buttons[i, j].Image != null)
-						buttons[i, j].Image = new Bitmap(buttons[i, j].Image, new Size(buttonSize - 1, buttonSize - 1));
+					if (cells[i, j].Image != null)
+						cells[i, j].Image = new Bitmap(cells[i, j].Image, new Size(cellSize - 1, cellSize - 1));
 
-					if (buttons[i, j].BackgroundImage != null)
-						buttons[i, j].BackgroundImage = new Bitmap(chess[i, j].chessSprite, new Size(buttonSize - 10, buttonSize - 10));
+					if (cells[i, j].BackgroundImage != null)
+						cells[i, j].BackgroundImage = new Bitmap(chess[i, j].chessSprite, new Size(cellSize - 10, cellSize - 10));
 				}
 
-				VLLabels[i].Location = new Point(0, (i * buttonSize) + buttonSize / 2 + frameSize);
-				VRLabels[i].Location = new Point((8 * buttonSize) + frameSize, (i * buttonSize) + buttonSize / 2 + frameSize / 2);
+				VLLabels[i].Location = new Point(0, (i * cellSize) + cellSize / 2 + frameSize);
+				VRLabels[i].Location = new Point((8 * cellSize) + frameSize, (i * cellSize) + cellSize / 2 + frameSize / 2);
 
-				HTLabels[i].Location = new Point((i * buttonSize) + buttonSize / 2 + frameSize / 2, 0);
-				HBLabels[i].Location = new Point((i * buttonSize) + buttonSize / 2 + frameSize / 2, (8 * buttonSize) + 2 * frameSize / 2);
+				HTLabels[i].Location = new Point((i * cellSize) + cellSize / 2 + frameSize / 2, 0);
+				HBLabels[i].Location = new Point((i * cellSize) + cellSize / 2 + frameSize / 2, (8 * cellSize) + 2 * frameSize / 2);
 
 				VLLabels[i].Size = VRLabels[i].Size = HTLabels[i].Size = HBLabels[i].Size = new Size(frameSize, frameSize);
 
@@ -735,15 +720,15 @@ namespace Chess
 
 			for (int i = 0; i < 16; i++)
 			{
-				WlabelsKnockout[i].Size = BlabelsKnockout[i].Size = new Size(labelSize, labelSize);
+				WLabelsKnockout[i].Size = BLabelsKnockout[i].Size = new Size(labelSize, labelSize);
 
-				WlabelsKnockout[i].Location = new Point((8 * buttonSize) + frameSize * 3 + ((i % 4) * labelSize), frameSize + (i / 4) * labelSize);
-				BlabelsKnockout[i].Location = new Point((8 * buttonSize) + frameSize * 3 + ((i % 4) * labelSize), (7 * labelSize) + frameSize - (i / 4) * labelSize);
+				WLabelsKnockout[i].Location = new Point((8 * cellSize) + frameSize * 3 + ((i % 4) * labelSize), frameSize + (i / 4) * labelSize);
+				BLabelsKnockout[i].Location = new Point((8 * cellSize) + frameSize * 3 + ((i % 4) * labelSize), (7 * labelSize) + frameSize - (i / 4) * labelSize);
 
-				if (WlabelsKnockout[i].Image != null)
-					WlabelsKnockout[i].Image = new Bitmap(currentMatch.WKnockoutChess[i].chessSprite, new Size(labelSize, labelSize));
-				if (BlabelsKnockout[i].Image != null)
-					BlabelsKnockout[i].Image = new Bitmap(currentMatch.BKnockoutChess[i].chessSprite, new Size(labelSize, labelSize));
+				if (WLabelsKnockout[i].Image != null)
+					WLabelsKnockout[i].Image = new Bitmap(currentMatch.WKnockoutChess[i].chessSprite, new Size(labelSize, labelSize));
+				if (BLabelsKnockout[i].Image != null)
+					BLabelsKnockout[i].Image = new Bitmap(currentMatch.BKnockoutChess[i].chessSprite, new Size(labelSize, labelSize));
 			}
 
 			//Элементы становятся видимыми

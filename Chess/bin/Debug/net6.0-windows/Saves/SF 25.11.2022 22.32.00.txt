@@ -1,6 +1,0 @@
-1. Pd2-d4 Pa7-a5
-2. Pd4-d5 Pe7-e5
-3. Pd5/e6 Pd7:e6
-4. Pg2-g4 Pe6-e5
-5. Pg4-g5 Pf7-f5
-6. Pg5/f6 Pg7:f6
