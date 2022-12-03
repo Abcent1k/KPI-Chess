@@ -12,12 +12,20 @@ namespace Chess
 		public Bitmap arrowLeft;
 		public Bitmap arrowRight;
 
-		public Color lightCell = Color.FromArgb(255, 237, 252, 248);//Светлый цвет для карты цветов
-		public Color darkCell = Color.FromArgb(255, 0, 87, 62);//Темный цвет для карты цветов
 		public Color frame = Color.FromArgb(255, 0, 43, 29);//Цвет рамки вокруг шахматной доски
+
+		public Color lightCell = Color.FromArgb(255, 237, 252, 248);//Светлый цвет для карты цветов
+		public Color darkCell = Color.FromArgb(255, 0, 87, 62);//Темный цвет для карты цветов		
 
 		public Color lightPushedCell = Color.LightGreen;//Цвет нажатой кнопки, если клетка под фигурой светлая
 		public Color darkPushedCell = Color.MediumSeaGreen;//Цвет нажатой кнопки, если клетка под фигурой темная
+
+		public Color lightPrevCell = Color.FromArgb(255, 172, 250, 255);//Цвет предыдущей кнопки, если клетка под фигурой светлая
+		public Color darkPrevCell = Color.FromArgb(255, 0, 162, 159);//Цвет предыдущей кнопки, если клетка под фигурой темная
+
+		public Color[,] chessboardColorMap = new Color[8, 8];//Карта цветов шахматной доски
+		public Color[,] PushedCellColorMap = new Color[8, 8];
+		public Color[,] PrevCellColorMap = new Color[8, 8];
 
 		public Match currentMatch;
 
@@ -35,9 +43,7 @@ namespace Chess
 			{"","","","","","","",""},
 			{"wP","wP","wP","wP","wP","wP","wP","wP"},
 			{"wR","wH","wB","wQ","wK","wB","wH","wR"},
-		};
-
-		public Color[,] colorMap = new Color[8, 8];//Карта цветов шахматной доски
+		};	
 
 		public Button? prevCell;
 
@@ -78,11 +84,11 @@ namespace Chess
 		/// </summary>
 		/// <param name="light">Светлая клетка</param>
 		/// <param name="dark">Темная клетка</param>
-		public void CreateColorMap(Color light, Color dark)
+		public void CreateColorMap(Color[,] colorMap, Color light, Color dark)
 		{
-			for (int i = 0; i < 8; i++)
+			for (int i = 0; i < Math.Sqrt(colorMap.Length); i++)
 			{
-				for (int j = 0; j < 8; j++)
+				for (int j = 0; j < Math.Sqrt(colorMap.Length); j++)
 				{
 					if ((i % 2 + j % 2) % 2 == 0)//Задаем цвета клеточек доски
 						colorMap[i, j] = light;
@@ -151,7 +157,9 @@ namespace Chess
 
 			formSidesProportion = (float)(Width - 18) / (float)(Height - 47);
 
-			CreateColorMap(lightCell, darkCell);
+			CreateColorMap(chessboardColorMap, lightCell, darkCell);
+			CreateColorMap(PushedCellColorMap, lightPushedCell, darkPushedCell);
+			CreateColorMap(PrevCellColorMap, lightPrevCell, darkPrevCell);
 
 			for (int i = 0; i < 8; i++)
 			{
@@ -164,8 +172,8 @@ namespace Chess
 					button.FlatAppearance.BorderSize = 0;//Убeраем рамку у кнопок
 					button.FlatStyle = FlatStyle.Flat;//Делаем кнопку плоской, без скгруления
 					button.Location = new Point(frameSize + j * cellSize, frameSize + i * cellSize);//Расставляем кнопки
-					button.BackColor = colorMap[i, j];
-					button.FlatAppearance.MouseDownBackColor = colorMap[i, j];//Нужно, чтобы не менялся цвет клетки в момент зажатия кнопки (по дефолту цвет был голубым, некрасиво)
+					button.BackColor = chessboardColorMap[i, j];
+					button.FlatAppearance.MouseDownBackColor = chessboardColorMap[i, j];//Нужно, чтобы не менялся цвет клетки в момент зажатия кнопки (по дефолту цвет был голубым, некрасиво)
 
 					button.Click += new EventHandler(OnFigurePress);//Добавляем ивент
 
@@ -202,7 +210,7 @@ namespace Chess
 						button.BackgroundImageLayout = ImageLayout.Center;
 					}
 				}
-			}
+			}				
 
 			//Обводка вокруг шахматной доски
 			for (int i = 0; i < 8; i++)
@@ -295,6 +303,8 @@ namespace Chess
 		/// <param name="e"></param>
 		private void OnFigurePress(object sender, EventArgs e)
 		{
+			StepsCalculate();
+
 			Button pressCell = sender as Button;
 
 			int Y = (pressCell.Location.Y - frameSize) / cellSize;
@@ -304,11 +314,13 @@ namespace Chess
 			int prevX = (prevCell?.Location.X ?? frameSize - frameSize) / cellSize;
 
 			Chessman pressChess = chess[Y, X];
+			Chessman prevChess = chess[prevY, prevX];
 
 			//Нажатие на подсвечиваемую фигуру
 			if (pressCell.BackColor == lightPushedCell || pressCell.BackColor == darkPushedCell)
 			{
 				ResetBacklightChessboard();
+				ResetImageChessboard();
 				prevCell = null;
 				return;
 			}
@@ -432,12 +444,8 @@ namespace Chess
 				}
 
 				//Превращение пешки в другую фигуру
-				if (chess[Y, X]?.type == 'P' && (Y == 7 || Y == 0))
-				{
-					chess[Y, X].PossibleSteps(this);
-
-					BlockChessboard(true);
-				}
+				if (chess[Y, X]?.type == 'P' && (Y == 7 || Y == 0))				
+					BlockChessboard(true);				
 
 				//Смена хода + счет хода + подсветка чей ход
 				if (currentMatch.witeTurn == true)
@@ -465,11 +473,29 @@ namespace Chess
 					else
 						currentMatch.WCastling = false;
 				}
-
+		
 				//Обнуление маркеров
 				posStepsCalculated = false;
+				ResetBacklightChessboard(resetPrev : true);
+				ResetImageChessboard();
 
-				ResetBacklightChessboard();
+				//Просчитать возможные ходы
+				StepsCalculate();
+
+				//Проверка на шах
+				CheckShah();
+
+				//Подсветка предыдущего хода
+				for (int i = 0; i < 8; i++)
+				{
+					for (int j = 0; j < 8; j++)
+					{
+						if (chess[i,j] == prevChess)
+							cells[i,j].BackColor = PrevCellColorMap[i, j];
+					}
+				}
+				prevCell.BackColor = PrevCellColorMap[prevY, prevX];
+
 				prevCell = null;//Обнуление предыдущей кнопки
 				ShowChessboard();
 				return;
@@ -480,6 +506,7 @@ namespace Chess
 			{
 				prevCell = pressCell;
 				ResetBacklightChessboard();
+				ResetImageChessboard();
 
 				if (pressChess != null)
 				{
@@ -487,27 +514,26 @@ namespace Chess
 					if ((currentMatch.witeTurn && pressChess.color == 'b') || (!currentMatch.witeTurn && pressChess.color == 'w'))
 						return;
 
-					//Посчитать возможные ходы
-					if (posStepsCalculated == false)
-					{
-						foreach (var chessman in chess)
-						{
-							if (chessman != null)
-								chessman.PossibleSteps(this);
-							posStepsCalculated = true;
-						}
-					}
-
 					//Подсветка выбраной фигуры
-					if (pressCell.BackColor == lightCell)
-						pressCell.BackColor = lightPushedCell;
-					else
-						pressCell.BackColor = darkPushedCell;
-
-					BacklightChessboard(pressChess);
+					pressCell.BackColor = PushedCellColorMap[Y, X];
+					
+					BacklightImageChessboard(pressChess);
 
 					prevCell = pressCell;
 				}
+			}
+		}
+	
+		public void StepsCalculate()
+		{
+			if (posStepsCalculated == false)
+			{
+				foreach (var chessman in chess)
+				{
+					if (chessman != null)
+						chessman.PossibleSteps(this);
+				}
+				posStepsCalculated = true;
 			}
 		}
 
@@ -547,9 +573,9 @@ namespace Chess
 			chess[y, X] = pressChess;
 			cells[y, X].BackgroundImage = new Bitmap(chess[y, X].chessSprite, new Size(cellSize - 10, cellSize - 10));
 
-			foreach (Button button in PromotionCells)
+			foreach (Button cell in PromotionCells)
 			{
-				Controls.Remove(button);
+				Controls.Remove(cell);
 			}
 
 			//
@@ -559,6 +585,52 @@ namespace Chess
 			//
 
 			BlockChessboard(false);
+		}
+
+		/// <summary>
+		/// Проверка на шах
+		/// </summary>
+		public void CheckShah()
+		{
+			King whiteKing = new King('w');
+			King blackKing = new King('b');
+
+			int wY = 0, wX = 0;
+			int bY = 0, bX = 0;
+
+			foreach (var chessman in chess)
+			{
+				if (chessman?.type == 'K')
+				{
+					if (chessman.color == 'w')					
+						whiteKing = (King)chessman;
+					else
+						blackKing = (King)chessman;
+				}
+			}
+
+			whiteKing.GetIter(this, ref wX, ref wY);
+			blackKing.GetIter(this, ref bX, ref bY);
+
+			//
+			StreamWriter sw = new StreamWriter(new FileStream($"Saves\\{currentMatch.safeFile}.txt", FileMode.Append));	
+			
+			foreach (var chessman in chess)
+			{
+				if (chessman?.posSteps[wY, wX] == 2)
+				{
+					cells[wY, wX].BackColor = Color.Red;
+					sw.Write("+");
+				}
+				if (chessman?.posSteps[bY, bX] == 2)
+				{ 
+					cells[bY, bX].BackColor = Color.Red;
+					sw.Write("+");
+				}
+			}
+
+			sw.Close();
+			//
 		}
 
 		/// <summary>
@@ -579,10 +651,10 @@ namespace Chess
 		}
 
 		/// <summary>
-		/// Подсветка возможных ходов
+		/// Подсветка возможных ходов картинками
 		/// </summary>
 		/// <param name="chessman">шахматная фигура на доске</param>
-		private void BacklightChessboard(Chessman chessman)
+		private void BacklightImageChessboard(Chessman chessman)
 		{
 			for (int i = 0; i < 8; i++)
 			{
@@ -612,10 +684,12 @@ namespace Chess
 			}
 		}
 
+
 		/// <summary>
 		/// Сброс подсветок на шахматной доске
 		/// </summary>
-		private void ResetBacklightChessboard()
+		/// <param name="resetPrev">Сбросить подсветку предыдущего хода</param>
+		private void ResetBacklightChessboard(bool resetPrev = false)
 		{
 			if (prevCell != null)
 			{
@@ -623,10 +697,22 @@ namespace Chess
 				{
 					for (int j = 0; j < 8; j++)
 					{
-						cells[i, j].BackColor = colorMap[i, j];
-						cells[i, j].Image = null;
+						if (!resetPrev && cells[i, j].BackColor == PrevCellColorMap[i, j])
+							continue;						
+						cells[i, j].BackColor = chessboardColorMap[i, j];
 					}
 				}
+			}
+		}
+
+		/// <summary>
+		/// Сброс картинок-подсветок
+		/// </summary>
+		private void ResetImageChessboard()
+		{
+			foreach (Button cell in cells)
+			{
+				cell.Image = null;
 			}
 		}
 
@@ -642,11 +728,6 @@ namespace Chess
 		{
 			oldWidth = Width;
 			oldHeight = Height;
-		}
-
-		private void Chessboard_Load(object sender, EventArgs e)
-		{
-
 		}
 
 		private void Chessboard_ResizeEnd(object sender, EventArgs e)

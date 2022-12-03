@@ -1,0 +1,5 @@
+1. Pa2-a4 Pb7-b5
+2. Pa4:b5 Pa7-a5
+3. Pb5/a6 Nb8-c6
+4. Pa6-a7 Ra8-b8
+5. Pa7-a8=R

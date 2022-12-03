@@ -1,5 +1,0 @@
-1. Pb2-b4 Pc7-c5
-2. Pb4:c5 Pb7-b5
-3. Pc5/b6 Pa7-b6
-4. Nb1-c3 Pb6-b5
-5. Nc3:b5

@@ -31,7 +31,7 @@
 			WCastling = true;
 			BCastling= true;
 
-			cb.Init();
+			cb.Init();		
 		}
 	}
 }

@@ -3,7 +3,7 @@
 	internal class Pawn : Chessman
 	{
 		public Pawn(char color) : base(color) { }
-
+		
 		public override byte[,] PossibleSteps(Chessboard cb)
 		{
 			ResetSteps();

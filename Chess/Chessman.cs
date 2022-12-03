@@ -78,10 +78,5 @@
 		public char type { get; }
 
 		public char color { get; }
-
-		/// <summary>
-		/// Маркер, посчитаны ли возможные ходы выбраной фигуры
-		/// </summary>
-		public bool posStepCalculated;
 	}
 }

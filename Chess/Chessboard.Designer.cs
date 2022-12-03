@@ -53,8 +53,7 @@
 			this.MinimumSize = new System.Drawing.Size(514, 407);
 			this.Name = "Chessboard";
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-			this.Text = "Chess";
-			this.Load += new System.EventHandler(this.Chessboard_Load);
+			this.Text = "Chess";			
 			this.ResizeBegin += new System.EventHandler(this.Chessboard_ResizeBegin);
 			this.ResizeEnd += new System.EventHandler(this.Chessboard_ResizeEnd);
 			this.ResumeLayout(false);
