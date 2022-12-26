@@ -1,6 +1,6 @@
 ﻿namespace Chess
 {
-	public abstract class Chessman
+	public abstract class Chessman : ICloneable
 	{
 		public Chessman(char color)
 		{
@@ -23,6 +23,8 @@
 			
 			posSteps = new byte[8, 8];
 		}
+
+		public abstract object Clone();
 
 		/// <summary>
 		/// Обнулить маркеры подсветки

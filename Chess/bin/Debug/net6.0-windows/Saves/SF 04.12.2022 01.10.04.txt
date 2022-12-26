@@ -1,6 +1,0 @@
-1. Pb2-b4 Pc7-c6
-2. Pb4-b5 Pc6:b5
-3. Pc2-c4 Pb5:c4
-4. Nb1-c3 Qd8-a5
-5. Nc3-b5 Qa5:d2+
-6. Qd1:d2

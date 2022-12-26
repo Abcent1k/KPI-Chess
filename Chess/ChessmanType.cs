@@ -1,9 +1,13 @@
-﻿namespace Chess
+﻿using System.Drawing;
+
+namespace Chess
 {
 	internal class Pawn : Chessman
 	{
 		public Pawn(char color) : base(color) { }
-		
+
+		public override object Clone() { return new Pawn(color); }
+
 		public override byte[,] PossibleSteps(Chessboard cb)
 		{
 			ResetSteps();
@@ -15,7 +19,7 @@
 
 			int plus_mn = 1;
 
-			StreamReader sr = new StreamReader($"Saves\\{cb.currentMatch.safeFile}.txt");
+			StreamReader sr = new StreamReader($"Saves\\{cb.safeFile}.txt");
 			string str = sr.ReadToEnd();
 			int len = str.Length;
 
@@ -29,7 +33,7 @@
 				y1 *= -1;
 				y2 *= -1;
 				y16 = 6;
-				yEnd = 0;				
+				yEnd = 0;
 			}
 			//Превращение пешки
 			if (Y == yEnd)
@@ -46,7 +50,7 @@
 					cb.PromotionChess[i].chessSprite = new Bitmap(cb.PromotionChess[i].chessSprite, new Size(cb.cellSize - 10, cb.cellSize - 10));
 
 					cb.PromotionCells[i] = new Button();
-					cb.PromotionCells[i].FlatAppearance.BorderSize = 0;					
+					cb.PromotionCells[i].FlatAppearance.BorderSize = 0;
 					cb.PromotionCells[i].BackgroundImage = cb.PromotionChess[i].chessSprite;
 					cb.PromotionCells[i].BackgroundImageLayout = ImageLayout.Center;
 					cb.PromotionCells[i].Size = new Size(cb.cellSize, cb.cellSize);
@@ -70,7 +74,7 @@
 
 						//Ход на две клеточки
 						if (Y == y16 && cb.chess[Y + y2, X] == null)
-							posSteps[Y + y2, X] = 1;						
+							posSteps[Y + y2, X] = 1;
 					}
 
 					//Бить
@@ -78,10 +82,10 @@
 						posSteps[Y + y1, X + plus_mn] = 2;
 
 					//En passant
-					if(((Y == 4 && color == 'b') || (Y == 3 && color == 'w')) && 
+					if (((Y == 4 && color == 'b') || (Y == 3 && color == 'w')) &&
 						((X - 1 >= 0 && cb.chess[Y, X - 1]?.type == 'P') || (X + 1 <= 7 && cb.chess[Y, X + 1]?.type == 'P')))
-					{														
-						if(((char)(X + plus_mn + 97) == (str[len-2])) && ((char)(X + plus_mn + 97) == (str[len - 5])))
+					{
+						if (((char)(X + plus_mn + 97) == (str[len - 2])) && ((char)(X + plus_mn + 97) == (str[len - 5])))
 						{
 							if (str[len - 4] == (char)(7 + 48))
 							{
@@ -111,6 +115,8 @@
 	{
 		public Rook(char color) : base(color) { }
 
+		public override object Clone() { return new Rook(color); }
+
 		public override byte[,] PossibleSteps(Chessboard cb)
 		{
 			ResetSteps();
@@ -138,14 +144,14 @@
 
 						try
 						{
-							if(cb.chess[Y + y, X + x] == null)
+							if (cb.chess[Y + y, X + x] == null)
 								posSteps[Y + y, X + x] = 1;
-							
+
 							else if ((cb.chess[Y + y, X + x].color) != color)
 							{
 								posSteps[Y + y, X + x] = 2;
 								break;
-							}							
+							}
 							else
 								break;
 						}
@@ -154,20 +160,6 @@
 				}
 				plus_mn *= -1;
 			}
-
-			if((cb.chess[Y, X].color == 'b' && cb.currentMatch.BCastling == true) || (cb.chess[Y, X].color == 'w' && cb.currentMatch.WCastling == true))
-			{
-				if (X == 0)
-				{
-					if (cb.chess[Y, 1] == null && cb.chess[Y, 2] == null && cb.chess[Y, 3] == null)
-						posSteps[Y, 4] = 4;
-				}
-				else if (X == 7)
-				{
-					if (cb.chess[Y, 5] == null && cb.chess[Y, 6] == null)
-						posSteps[Y, 4] = 5;
-				}				
-			}			
 			return posSteps;
 		}
 
@@ -176,6 +168,8 @@
 	internal class Bishop : Chessman
 	{
 		public Bishop(char color) : base(color) { }
+
+		public override object Clone() { return new Bishop(color); }
 
 		public override byte[,] PossibleSteps(Chessboard cb)
 		{
@@ -207,7 +201,7 @@
 							{
 								posSteps[Y + y, X + x] = 2;
 								break;
-							}							
+							}
 							else
 								break;
 						}
@@ -226,6 +220,8 @@
 	internal class Queen : Chessman
 	{
 		public Queen(char color) : base(color) { }
+
+		public override object Clone() { return new Queen(color); }
 
 		public override byte[,] PossibleSteps(Chessboard cb)
 		{
@@ -312,6 +308,8 @@
 	{
 		public Night(char color) : base(color) { }
 
+		public override object Clone() { return new Night(color); }
+
 		public override byte[,] PossibleSteps(Chessboard cb)
 		{
 			ResetSteps();
@@ -357,6 +355,8 @@
 	{
 		public King(char color) : base(color) { }
 
+		public override object Clone() { return new King(color); }	
+
 		public override byte[,] PossibleSteps(Chessboard cb)
 		{
 			ResetSteps();
@@ -382,10 +382,10 @@
 
 							try
 							{
-								if (cb.chess[Y + y, X + x] == null)								
-									posSteps[Y + y, X + x] = 1;								
+								if (cb.chess[Y + y, X + x] == null)
+									posSteps[Y + y, X + x] = 1;
 								else if (cb.chess[Y + y, X + x].color != color)
-									posSteps[Y + y, X + x] = 2;								
+									posSteps[Y + y, X + x] = 2;
 							}
 							catch (IndexOutOfRangeException) { }
 						}
@@ -395,18 +395,32 @@
 				plus_mn_y *= -1;
 			}
 
-			if ((cb.chess[Y, X].color == 'b' && cb.currentMatch.BCastling == true) || (cb.chess[Y, X].color == 'w' && cb.currentMatch.WCastling == true))
+			if (cb.chess[Y, X].color == 'b')
 			{
-				if (cb.chess[Y, 0].type == 'R')
-				{					
-					if (cb.chess[Y, 1] == null && cb.chess[Y, 2] == null && cb.chess[Y, 3] == null)					
-						posSteps[Y, 0] = 5;											
+				if (cb.currentMatch.BLeftCastling == true && cb.chess[Y, 0]?.type == 'R')
+				{
+					if (cb.chess[Y, 1] == null && cb.chess[Y, 2] == null && cb.chess[Y, 3] == null)
+						posSteps[Y, 2] = 4;
 				}
-				if (cb.chess[Y, 7].type == 'R')
-				{					
-					if (cb.chess[Y, 5] == null && cb.chess[Y, 6] == null)						
-						posSteps[Y, 7] = 4;								
+				if (cb.currentMatch.BRightCastling == true && cb.chess[Y, 7]?.type == 'R')
+				{
+					if (cb.chess[Y, 5] == null && cb.chess[Y, 6] == null)
+						posSteps[Y, 6] = 4;
 				}
+			}
+			else
+			{
+				if (cb.currentMatch.WLeftCastling == true && cb.chess[Y, 0]?.type == 'R')
+				{
+					if (cb.chess[Y, 1] == null && cb.chess[Y, 2] == null && cb.chess[Y, 3] == null)
+						posSteps[Y, 2] = 4;
+				}
+				if (cb.currentMatch.WRightCastling == true && cb.chess[Y, 7]?.type == 'R')
+				{
+					if (cb.chess[Y, 5] == null && cb.chess[Y, 6] == null)
+						posSteps[Y, 6] = 4;
+				}
+
 			}
 			return posSteps;
 		}
