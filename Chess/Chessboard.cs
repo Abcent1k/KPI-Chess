@@ -1,4 +1,8 @@
 using System.Media;
+using System.IO;
+using System.Diagnostics;
+using System.Windows.Forms;
+using System.DirectoryServices;
 
 namespace Chess
 {
@@ -12,7 +16,7 @@ namespace Chess
 		public Bitmap circle;
 		public Bitmap cross;
 		public Bitmap arrowLeft;
-		
+
 		public Color frame = Color.FromArgb(255, 0, 43, 29);//Цвет рамки вокруг шахматной доски
 
 		public Color lightCell = Color.FromArgb(255, 237, 252, 248);//Светлый цвет для карты цветов
@@ -83,7 +87,7 @@ namespace Chess
 			{
 				for (int j = 0; j < 8; j++)
 				{
-					if(cb.chess[i, j]!= null)
+					if (cb.chess[i, j] != null)
 						chess[i, j] = (Chessman)cb.chess[i, j].Clone();
 				}
 			}
@@ -141,7 +145,7 @@ namespace Chess
 		/// <param name="showElement">Скрыть или показать</param>
 		//Нужен для красивой отрисовки UI при изменении размеров окна
 		private void RedrawingUI(bool showElement)
-		{			
+		{
 			for (int i = 0; i < 8; i++)
 			{
 				for (int j = 0; j < 8; j++)
@@ -167,7 +171,7 @@ namespace Chess
 			circle = new Bitmap(new Bitmap($"Sprites\\circle.png"), new Size(cellSize - 1, cellSize - 1));
 			cross = new Bitmap($"Sprites\\cross.png");
 			arrowLeft = new Bitmap(new Bitmap($"Sprites\\arrowLeft.png"), new Size(cellSize - 1, cellSize - 1));
-		
+
 			frameSize = (int)(cellSize / 3.6);
 			labelSize = (int)(cellSize / 1.5);
 
@@ -191,7 +195,7 @@ namespace Chess
 					button.BackColor = chessboardColorMap[i, j];
 					button.FlatAppearance.MouseDownBackColor = chessboardColorMap[i, j];//Нужно, чтобы не менялся цвет клетки в момент зажатия кнопки (по дефолту цвет был голубым, некрасиво)
 
-					button.Click += new EventHandler(OnFigurePress);//Добавляем ивент
+					button.Click += new EventHandler(OnCellPress);//Добавляем ивент
 
 					Controls.Add(button);
 					cells[i, j] = button;
@@ -226,7 +230,7 @@ namespace Chess
 						button.BackgroundImageLayout = ImageLayout.Center;
 					}
 				}
-			}				
+			}
 
 			//Обводка вокруг шахматной доски
 			for (int i = 0; i < 8; i++)
@@ -304,7 +308,7 @@ namespace Chess
 		/// </summary>
 		/// <param name="sender">Кнопка</param>
 		/// <param name="e"></param>
-		private void OnFigurePress(object sender, EventArgs e)
+		private void OnCellPress(object sender, EventArgs e)
 		{
 			StepsCalculate();
 
@@ -330,14 +334,14 @@ namespace Chess
 
 			//Сделать возможный ход, который подсвечивается 
 			else if (pressCell.Image != null)
-			{				
+			{
 				if (currentMatch.witeTurn == true)
 				{
 					if (currentMatch.currentStep != 1)
-						SafeFileAppend("\n");						
+						SafeFileAppend("\n");
 					SafeFileAppend($"{currentMatch.currentStep}.");
 				}
-				
+
 				//Не реагировать на нажатие крестика
 				if (pressCell.Image == cross)
 					return;
@@ -366,7 +370,7 @@ namespace Chess
 						currentMatch.WRightCastling = false;
 					}
 
-					SafeFileAppend(" 0-0");					
+					SafeFileAppend(" 0-0");
 
 					//Короткая 0-0
 					if (X == 6)
@@ -379,17 +383,17 @@ namespace Chess
 					{
 						FiguresPermutation(cells[Y, 0], cells[Y, 3]);
 						FiguresPermutation(prevCell, pressCell);
-						
-						SafeFileAppend("-0");						
+
+						SafeFileAppend("-0");
 					}
 				}
 
 				//En passant
-				else if (pressCell.Image == circle && ((Y - 1 >= 0 && (cells[Y - 1, X].Image == cross)) || 
+				else if (pressCell.Image == circle && ((Y - 1 >= 0 && (cells[Y - 1, X].Image == cross)) ||
 						(Y + 1 <= 7 && cells[Y + 1, X].Image == cross)))
 				{
 					SafeFileAppend($" {chess[prevY, prevX].type}{(char)(97 + prevX)}{8 - prevY}/{(char)(97 + X)}{8 - Y}");
-					
+
 					try
 					{
 						List<Chessman> KnockoutChess = currentMatch.WKnockoutChess;
@@ -424,7 +428,7 @@ namespace Chess
 					Chessman ShahKing = CheckPotCheck(prevCell, pressCell);
 
 					//Проверка на то, чтобы не поставить себе шах
-					if ((ShahKing?.color == 'w' && currentMatch.witeTurn == true) || 
+					if ((ShahKing?.color == 'w' && currentMatch.witeTurn == true) ||
 						(ShahKing?.color == 'b' && currentMatch.witeTurn == false))
 					{
 						playExclamation();
@@ -432,7 +436,7 @@ namespace Chess
 					}
 
 					//Если стоит шах, то нужно его отбить
-					if((currentMatch.witeTurn && currentMatch.WShah) || (!currentMatch.witeTurn && currentMatch.BShah))
+					if ((currentMatch.witeTurn && currentMatch.WShah) || (!currentMatch.witeTurn && currentMatch.BShah))
 					{
 						if (ShahKing != null)
 							return;
@@ -443,6 +447,7 @@ namespace Chess
 								currentMatch.WShah = false;
 							else
 								currentMatch.BShah = false;
+							return;
 						}
 					}
 
@@ -465,15 +470,15 @@ namespace Chess
 						labelsKnockout[iter].Image = new Bitmap(KnockoutChess[iter].chessSprite, new Size(labelSize, labelSize));
 					}
 
-					FiguresPermutation(prevCell, pressCell);					
+					FiguresPermutation(prevCell, pressCell);
 				}
 
 				//Превращение пешки в другую фигуру
-				if (chess[Y, X]?.type == 'P' && (Y == 7 || Y == 0))				
-					BlockChessboard(true);				
+				if (chess[Y, X]?.type == 'P' && (Y == 7 || Y == 0))
+					BlockChessboard(true);
 
 				//Cчет хода
-				if (currentMatch.witeTurn == true)				
+				if (currentMatch.witeTurn == true)
 					currentMatch.currentStep++;
 
 				//Смена хода
@@ -488,21 +493,21 @@ namespace Chess
 						currentMatch.BRightCastling = false;
 					}
 					else
-					{ 
+					{
 						currentMatch.WRightCastling = false;
 						currentMatch.WLeftCastling = false;
 					}
 				}
 				if (chess[Y, X] != null && chess[Y, X].type == 'R')
 				{
-					if(prevX == 0)
+					if (prevX == 0)
 					{
-						if(chess[Y, X].color == 'b')
+						if (chess[Y, X].color == 'b')
 							currentMatch.BLeftCastling = false;
 						else
 							currentMatch.WLeftCastling = false;
 					}
-					else if(prevX == 7)
+					else if (prevX == 7)
 					{
 						if (chess[Y, X].color == 'b')
 							currentMatch.BRightCastling = false;
@@ -513,7 +518,7 @@ namespace Chess
 
 				//Обнуление маркеров
 				posStepsCalculated = false;
-				ResetBacklightChessboard(resetPrev : true);
+				ResetBacklightChessboard(resetPrev: true);
 				ResetImageChessboard();
 
 				//Просчитать возможные ходы
@@ -524,8 +529,8 @@ namespace Chess
 				{
 					for (int j = 0; j < 8; j++)
 					{
-						if (chess[i,j] == prevChess)
-							cells[i,j].BackColor = PrevCellColorMap[i, j];
+						if (chess[i, j] == prevChess)
+							cells[i, j].BackColor = PrevCellColorMap[i, j];
 					}
 				}
 				prevCell.BackColor = PrevCellColorMap[prevY, prevX];
@@ -533,13 +538,13 @@ namespace Chess
 				//Обнуление предыдущей кнопки
 				prevCell = null;
 				ShowChessboard();
-				
+
 				//Проверка на шах
 				Chessman King = CheckCheck();
 
 				//Проверкка на мат
-				if (King != null)				
-					CheckMate(ref King);				
+				if (King != null)
+					CheckMate(ref King);
 
 				return;
 			}
@@ -559,14 +564,14 @@ namespace Chess
 
 					//Подсветка выбраной фигуры
 					pressCell.BackColor = PushedCellColorMap[Y, X];
-					
+
 					BacklightImageChessboard(pressChess);
 
 					prevCell = pressCell;
-				}				
+				}
 			}
 		}
-	
+
 		public void StepsCalculate()
 		{
 			if (posStepsCalculated == false)
@@ -694,11 +699,11 @@ namespace Chess
 
 			foreach (var chessman in tempCb.chess)
 			{
-				if (chessman?.posSteps[wY, wX] == 2)									
+				if (chessman?.posSteps[wY, wX] == 2)
 					return whiteKing;
-				
-				else if (chessman?.posSteps[bY, bX] == 2)				
-					return blackKing;				
+
+				else if (chessman?.posSteps[bY, bX] == 2)
+					return blackKing;
 			}
 
 			return null;
@@ -719,7 +724,7 @@ namespace Chess
 			{
 				if (chessman?.type == 'K')
 				{
-					if (chessman.color == 'w')					
+					if (chessman.color == 'w')
 						whiteKing = (King)chessman;
 					else
 						blackKing = (King)chessman;
@@ -812,8 +817,8 @@ namespace Chess
 
 			foreach (var step in King.posSteps)
 			{
-				if(step == 1 || step == 2)				
-					kingPosS2++;				
+				if (step == 1 || step == 2)
+					kingPosS2++;
 			}
 
 			if (kingPosS1 == kingPosS2)// Проверка на то, не может ли король сам уйти от шаха
@@ -832,13 +837,13 @@ namespace Chess
 						}
 					}
 
-					if(MateChessmans[0].type == 'R' || MateChessmans[0].type == 'Q' || MateChessmans[0].type == 'B')
+					if (MateChessmans[0].type == 'R' || MateChessmans[0].type == 'Q' || MateChessmans[0].type == 'B')
 					{
 						for (int i = 0; i < 8; i++)
 						{
 							for (int j = 0; j < 8; j++)
 							{
-								if (MateChessmans[0].posSteps[i,j] == 1)
+								if (MateChessmans[0].posSteps[i, j] == 1)
 								{
 									for (int a = 0; a < 8; a++)
 									{
@@ -847,7 +852,7 @@ namespace Chess
 											if (chess[a, b] != null && chess[a, b] != MateChessmans[0] && chess[a, b].posSteps[i, j] == 1)
 											{
 												Chessman CheckKing = CheckPotCheck(cells[a, b], cells[i, j]);
-												if(CheckKing == null)
+												if (CheckKing == null)
 												{
 													SafeFileAppend("+");
 													//Если да, то закрываем короля.
@@ -864,8 +869,8 @@ namespace Chess
 					MatActions();
 				}
 
-				else				
-					MatActions();				
+				else
+					MatActions();
 			}
 		}
 
@@ -930,7 +935,7 @@ namespace Chess
 					for (int j = 0; j < 8; j++)
 					{
 						if (!resetPrev && cells[i, j].BackColor == PrevCellColorMap[i, j])
-							continue;						
+							continue;
 						cells[i, j].BackColor = chessboardColorMap[i, j];
 					}
 				}
@@ -950,8 +955,8 @@ namespace Chess
 
 		private void button1_Click(object sender, EventArgs e)
 		{
-			Button pressBttn = sender as Button;
-			pressBttn.Visible = false;
+			foreach (var button in Controls.OfType<Button>())
+				button.Visible = false;
 
 			currentMatch = new Match(this);
 
@@ -959,6 +964,74 @@ namespace Chess
 
 			FileStream fs = new FileStream($"{savesPath}\\{safeFile}.txt", FileMode.Create);
 			fs.Close();
+		}
+
+		private void button2_Click(object sender, EventArgs e)
+		{
+			Directory.CreateDirectory(savesPath);
+
+			OpenFileDialog OPF = new OpenFileDialog();
+
+			OPF.Filter = "Файлы txt|*.txt";
+
+			OPF.InitialDirectory = Directory.GetCurrentDirectory() + "\\" + savesPath;
+
+			OPF.ShowDialog();
+
+			StreamReader sr;
+
+			try
+			{
+				sr = new StreamReader(OPF.OpenFile());
+			}
+			catch (IndexOutOfRangeException)
+			{
+				return;
+			}
+			sr.Close();
+
+			foreach (var button in Controls.OfType<Button>())
+				button.Visible = false;
+
+			currentMatch = new Match(this);
+
+			safeFile = OPF.FileName;
+			int pos = safeFile.LastIndexOf('\\');
+			safeFile = safeFile.Substring(pos).Replace("\\", String.Empty).Replace(".txt", String.Empty);
+
+			Aboba();
+		}
+
+		private void Aboba()
+		{
+			StreamReader sr = new StreamReader(new FileStream($"Saves\\{safeFile}.txt", FileMode.Open));
+			string str = sr.ReadToEnd();
+			sr.Close();
+
+			File.Delete($"Saves\\{safeFile}.txt");
+			StreamWriter sw = new StreamWriter(new FileStream($"Saves\\{safeFile}.txt", FileMode.Create));
+			sw.Close();
+
+			string [] strArray = str.Split('\n');
+
+			for (int a = 0; a < strArray.Length; a++)
+			{
+				string tempstr = strArray[a].Remove(0, 3);
+				string Wstr = "", Bstr = "";
+				int pos = tempstr.LastIndexOf(' ');
+
+				if(pos != -1)				
+				{
+					Wstr = tempstr.Substring(0, pos);
+					Bstr = tempstr.Substring(pos + 1);
+				}
+				else
+					Wstr = tempstr;
+
+				Aboba2(Wstr, 7);
+
+				Aboba2(Bstr, 0);
+			}
 		}
 
 		public void playExclamation()
@@ -1030,7 +1103,7 @@ namespace Chess
 			circle = new Bitmap(new Bitmap($"Sprites\\circle.png"), new Size(cellSize - 1, cellSize - 1));
 			cross = new Bitmap(new Bitmap($"Sprites\\cross.png"), new Size(cellSize - 1, cellSize - 1));
 			arrowLeft = new Bitmap(new Bitmap($"Sprites\\arrowLeft.png"), new Size(cellSize - 1, cellSize - 1));
-		
+
 			//Элементы становятся невидимыми
 			RedrawingUI(false);
 
@@ -1074,6 +1147,82 @@ namespace Chess
 
 			//Элементы становятся видимыми
 			RedrawingUI(true);
+		}
+
+		private void button3_Click(object sender, EventArgs e)
+		{
+			this.Close();
+		}
+
+		private void Aboba2(string str, int Y)
+		{
+			string letters = "abcdefgh";
+			string numbers = "12345678";
+
+			EventArgs e = null;
+
+			int X1 = -1, Y1 = -1;
+			int X2 = -1, Y2 = -1;
+			int X3 = -1;
+
+			for (int i = 0; i < str.Length; i++)
+			{
+				if (letters.Contains(str[i]))
+				{
+					if (X1 == -1)
+						X1 = str[i] - 97;
+					else
+						X2 = str[i] - 97;
+				}
+				if (numbers.Contains(str[i]))
+				{
+					if (Y1 == -1)
+						Y1 = Math.Abs(str[i] - 48 - 8);
+					else
+						Y2 = Math.Abs(str[i] - 48 - 8);
+				}
+				else if (str[i] == '0')
+				{
+					Y1 = Y;
+					Y2 = Y;
+					X1 = 4;
+					if (str.Length == 3)
+					{
+						X2 = 6;
+					}
+					else
+					{
+						X2 = 2;
+					}
+					break;
+				}
+				else if (str[i] == '=')
+				{
+					switch (str[i + 1])
+					{
+						case 'Q':
+							X3 = 0;
+							break;
+						case 'R':
+							X3 = 1;
+							break;
+						case 'B':
+							X3 = 2;
+							break;
+						case 'H':
+							X3 = 3;
+							break;
+					}
+				}
+				
+			}
+			if (str.Length > 0)
+			{
+				InvokeOnClick(cells[Y1, X1], e);
+				InvokeOnClick(cells[Y2, X2], e);
+				if (X3 >= 0)
+					InvokeOnClick(PromotionCells[X3], e);
+			}
 		}
 
 	}

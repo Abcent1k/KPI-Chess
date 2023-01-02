@@ -21,6 +21,7 @@ namespace Chess
 
 			StreamReader sr = new StreamReader($"Saves\\{cb.safeFile}.txt");
 			string str = sr.ReadToEnd();
+			sr.Close();
 			int len = str.Length;
 
 			int y1 = 1,//Для обычного хода
@@ -103,8 +104,6 @@ namespace Chess
 				catch (IndexOutOfRangeException) { }
 				plus_mn *= -1;
 			}
-
-			sr.Close();
 
 			return posSteps;
 		}
