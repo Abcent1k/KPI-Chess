@@ -1,0 +1,5 @@
+1. Pb2-b4 Pc7-c5
+2. Pb4:c5 Pb7-b5
+3. Pc5/b6 Nb8-c6
+4. Pb6:a7 Ra8-b8
+5. Pa7-a8=Q

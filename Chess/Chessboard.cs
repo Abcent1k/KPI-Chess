@@ -1,9 +1,4 @@
 using System.Media;
-using System.IO;
-using System.Diagnostics;
-using System.Windows.Forms;
-using System.DirectoryServices;
-using System.Drawing;
 
 namespace Chess
 {
@@ -545,8 +540,6 @@ namespace Chess
 				//Проверкка на мат
 				if (King != null)
 					CheckMate(ref King);
-
-				//return;
 			}
 
 			//Нажимаем на клетку без подсветки
