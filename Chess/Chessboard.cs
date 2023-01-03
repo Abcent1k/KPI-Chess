@@ -3,6 +3,7 @@ using System.IO;
 using System.Diagnostics;
 using System.Windows.Forms;
 using System.DirectoryServices;
+using System.Drawing;
 
 namespace Chess
 {
@@ -446,8 +447,7 @@ namespace Chess
 							if (currentMatch.WShah)
 								currentMatch.WShah = false;
 							else
-								currentMatch.BShah = false;
-							return;
+								currentMatch.BShah = false;							
 						}
 					}
 
@@ -546,7 +546,7 @@ namespace Chess
 				if (King != null)
 					CheckMate(ref King);
 
-				return;
+				//return;
 			}
 
 			//Нажимаем на клетку без подсветки
@@ -570,6 +570,10 @@ namespace Chess
 					prevCell = pressCell;
 				}
 			}
+
+			BacklightCheck(currentMatch.WShah, 'w');
+			BacklightCheck(currentMatch.BShah, 'b');
+
 		}
 
 		public void StepsCalculate()
@@ -600,6 +604,24 @@ namespace Chess
 
 			chess[Y, X] = chess[prevY, prevX];
 			chess[prevY, prevX] = null;
+		}
+
+		public void BacklightCheck(bool Shah, char color)
+		{
+			int x = -1, y = -1;
+
+			if (Shah == true)
+			{
+				foreach (var chessman in chess)
+				{
+					if (chessman!= null && chessman.type == 'K' && chessman.color == color)
+					{
+						chessman.GetIter(this, ref x, ref y);
+						break;
+					}
+				}
+				cells[y, x].BackColor = Color.Red;
+			}
 		}
 
 		/// <summary>
@@ -739,11 +761,13 @@ namespace Chess
 				if (chessman?.posSteps[wY, wX] == 2)
 				{
 					currentMatch.WShah = true;
+					cells[wY, wX].BackColor = Color.Red;
 					return whiteKing;
 				}
 				else if (chessman?.posSteps[bY, bX] == 2)
 				{
 					currentMatch.BShah = true;
+					cells[bY, bX].BackColor = Color.Red;
 					return blackKing;
 				}
 			}
@@ -999,10 +1023,10 @@ namespace Chess
 			int pos = safeFile.LastIndexOf('\\');
 			safeFile = safeFile.Substring(pos).Replace("\\", String.Empty).Replace(".txt", String.Empty);
 
-			Aboba();
+			ReadTheGameFromFile();
 		}
 
-		private void Aboba()
+		private void ReadTheGameFromFile()
 		{
 			StreamReader sr = new StreamReader(new FileStream($"Saves\\{safeFile}.txt", FileMode.Open));
 			string str = sr.ReadToEnd();
@@ -1028,9 +1052,9 @@ namespace Chess
 				else
 					Wstr = tempstr;
 
-				Aboba2(Wstr, 7);
+				SimulatingTheGame(Wstr, 7);
 
-				Aboba2(Bstr, 0);
+				SimulatingTheGame(Bstr, 0);
 			}
 		}
 
@@ -1154,7 +1178,7 @@ namespace Chess
 			this.Close();
 		}
 
-		private void Aboba2(string str, int Y)
+		private void SimulatingTheGame(string str, int Y)
 		{
 			string letters = "abcdefgh";
 			string numbers = "12345678";
