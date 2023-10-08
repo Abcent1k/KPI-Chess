@@ -1,8 +1,9 @@
 using System.Media;
+using Chess.Pieces;
 
 namespace Chess
 {
-	public partial class Chessboard : Form
+    public partial class Chessboard : Form
 	{
 		public int cellSize = 90;//Размер клетки (кнопки)	
 		public int frameSize = 25;
